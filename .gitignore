@@ -1,0 +1,20 @@
+# Node
+node_modules/
+.env
+npm-debug.log
+uploads/
+coverage/
+dist/
+
+# React Native
+android/
+ios/
+*.keystore
+*.jks
+
+# VSCode
+.vscode/
+
+# Docker
+*.log
+docker-compose.override.yml
