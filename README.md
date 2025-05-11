@@ -4,7 +4,7 @@ Frontend de EncinApp, una aplicación móvil desarrollada con **React Native** y
 
 ---
 
-## 📦 Tecnologías utilizadas
+## Tecnologías utilizadas
 
 - **React Native**
 - **Expo CLI**
