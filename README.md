@@ -1,0 +1,1 @@
+Este es el frontend de EncinApp, desarrollado con **React Native**.
