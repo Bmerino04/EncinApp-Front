@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    container_name: encinapp_front
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - "19006:19006"   # Expo Web
+      - "19000:19000"   # Expo (Android)
+      - "19001:19001"   # Expo (LAN)
+      - "8081:8081"     # Metro Bundler
+    environment:
+      - NODE_ENV=development
+    command: npm start
