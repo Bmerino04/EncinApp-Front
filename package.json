@@ -1,6 +1,5 @@
 {
   "name": "encinapp-front",
-  "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
@@ -33,6 +32,7 @@
     "expo-system-ui": "~5.0.7",
     "expo-web-browser": "~14.1.6",
     "native-base": "^3.4.28",
+    "normalize-css-color": "^1.0.2",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
@@ -41,7 +41,8 @@
     "react-native-safe-area-context": "^5.4.0",
     "react-native-screens": "~4.10.0",
     "react-native-web": "~0.20.0",
-    "react-native-webview": "13.13.5"
+    "react-native-webview": "13.13.5",
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
