@@ -1,31 +1,22 @@
-import { Tabs } from 'expo-router';
-import { useColorScheme } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
 import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { NativeBaseProvider } from 'native-base';
+import { theme } from '@/theme/catppuccinLatte';
+import AnnouncementsScreen from './announcements';
+import AnnouncementDetailScreen from './AnnouncementDetail';
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+const Stack = createNativeStackNavigator();
 
+export default function AppLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colorScheme === 'dark' ? '#fff' : '#000',
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }: { color: string }) => <TabBarIcon name="home" color={color} />,
-        }}
-      />
-    </Tabs>
+    <NativeBaseProvider theme={theme}>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="announcements" component={AnnouncementsScreen} />
+          <Stack.Screen name="AnnouncementDetail" component={AnnouncementDetailScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </NativeBaseProvider>
   );
-}
-
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
 }
