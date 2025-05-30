@@ -49,7 +49,7 @@ export function MainNavigationScreen() {
               <NavButton
                 icon={<MaterialIcons name="person" size={32} color="#3b4252" />}
                 label="Información Personal"
-                onPress={() => {}}
+                onPress={() => navigation.navigate('PersonalInfo')}
               />
               <NavButton
                 icon={<MaterialCommunityIcons name="alert-box-outline" size={32} color="#3b4252" />}

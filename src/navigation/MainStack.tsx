@@ -3,6 +3,7 @@ import { MainStackParamList } from './types';
 import { MainTabs } from './MainTabs';
 import { AnnouncementsScreen } from 'src/screens/main/AnnouncementsScreen';
 import { UsersScreen } from 'src/screens/main/UsersScreen';
+import { PersonalInfoScreen } from 'src/screens/main/PersonalInfoScreen';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -16,6 +17,7 @@ export function MainStack() {
       <Stack.Screen name="MainTabs" component={MainTabs} />
       <Stack.Screen name="Announcements" component={AnnouncementsScreen} />
       <Stack.Screen name="Users" component={UsersScreen} />
+      <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
       <Stack.Screen name="AnnouncementDetail" component={AnnouncementDetailScreen} />
       <Stack.Screen name="UserDetail" component={UserDetailScreen} />
       <Stack.Screen name="EditUser" component={EditUserScreen} />

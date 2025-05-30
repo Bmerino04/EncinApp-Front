@@ -12,6 +12,7 @@ export type MainStackParamList = {
   MainTabs: undefined;
   Announcements: undefined;
   Users: undefined;
+  PersonalInfo: undefined;
   AnnouncementDetail: { id: string };
   UserDetail: { id: string };
   EditUser: { id: string };
