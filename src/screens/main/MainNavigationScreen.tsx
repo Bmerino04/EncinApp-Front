@@ -3,8 +3,12 @@ import { Box, Center, VStack, HStack, Text, ScrollView } from 'native-base';
 import { NavButton } from 'src/components/common/NavButton';
 import { AlertButton } from 'src/components/common/AlertButton';
 import { MaterialIcons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from 'src/navigation/types';
 
 export function MainNavigationScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   return (
     <Box flex={1} bg="#f5f6fa">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -33,7 +37,7 @@ export function MainNavigationScreen() {
               <NavButton
                 icon={<MaterialIcons name="campaign" size={32} color="#3b4252" />}
                 label="Noticias"
-                onPress={() => {}}
+                onPress={() => navigation.navigate('Announcements')}
               />
               <NavButton
                 icon={<MaterialIcons name="groups" size={32} color="#3b4252" />}
