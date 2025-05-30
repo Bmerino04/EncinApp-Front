@@ -42,8 +42,7 @@ export function MainNavigationScreen() {
               <NavButton
                 icon={<MaterialIcons name="groups" size={32} color="#3b4252" />}
                 label="Vecinos"
-                onPress={() => {}}
-                notificationDot
+                onPress={() => navigation.navigate('Users')}
               />
             </HStack>
             <HStack justifyContent="space-between">
