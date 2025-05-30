@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../../navigation/types';
+import { AuthStackParamList } from 'src/navigation/types';
 import { MaterialIcons } from '@expo/vector-icons';
 
 const LoginSchema = Yup.object().shape({
