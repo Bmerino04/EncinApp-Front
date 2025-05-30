@@ -4,6 +4,8 @@ import { FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { AnnouncementCard, Announcement } from 'src/components/common/AnnouncementCard';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from 'src/navigation/types';
 
 const mockAnnouncements: Announcement[] = [
   {
@@ -27,7 +29,7 @@ const mockAnnouncements: Announcement[] = [
 ];
 
 export function AnnouncementsScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
   return (
     <Box flex={1} bg="#f5f6fa">
@@ -66,7 +68,12 @@ export function AnnouncementsScreen() {
       <FlatList
         data={mockAnnouncements}
         keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) => <AnnouncementCard announcement={item} />}
+        renderItem={({ item }) => (
+          <AnnouncementCard
+            announcement={item}
+            onPress={() => navigation.navigate('AnnouncementDetail', { id: String(item.id) })}
+          />
+        )}
         contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
       />
