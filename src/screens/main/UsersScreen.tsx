@@ -4,6 +4,8 @@ import { FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { UserListItem, User } from 'src/components/common/UserListItem';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from 'src/navigation/types';
 
 const mockUsers: User[] = [
   { id: 1, nombre: 'Bernardino Jara', rut: '', direccion: '', pin: '', disponibilidad: false, permisos: [] },
@@ -16,7 +18,7 @@ const mockUsers: User[] = [
 ];
 
 export function UsersScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
 
   return (
     <Box flex={1} bg="#f5f6fa">
@@ -61,7 +63,9 @@ export function UsersScreen() {
       <FlatList
         data={mockUsers}
         keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) => <UserListItem user={item} onPress={() => {}} />}
+        renderItem={({ item }) => (
+          <UserListItem user={item} onPress={() => navigation.navigate('UserDetail', { id: String(item.id) })} />
+        )}
         contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
       />
