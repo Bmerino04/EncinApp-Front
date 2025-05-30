@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Text, IconButton, Icon, StatusBar, VStack, HStack, Image } from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
 import { MainStackParamList } from 'src/navigation/types';
+import { ConfirmDeleteModal } from 'src/components/common/ConfirmDeleteModal';
 
 const mockAnnouncements = [
   {
@@ -25,6 +26,7 @@ export function AnnouncementDetailScreen() {
   const route = useRoute<AnnouncementDetailRouteProp>();
   const { id } = route.params;
   const announcement = mockAnnouncements.find(a => a.id === Number(id));
+  const [showDelete, setShowDelete] = useState(false);
 
   if (!announcement) {
     return (
@@ -71,7 +73,7 @@ export function AnnouncementDetailScreen() {
           icon={<Icon as={MaterialIcons} name="delete-outline" size={6} color="muted.500" />}
           borderRadius="full"
           variant="ghost"
-          onPress={() => {}}
+          onPress={() => setShowDelete(true)}
         />
       </Box>
       <Box bg="white" borderRadius={20} shadow={2} p={3} mx={3} mt={2}>
@@ -111,6 +113,11 @@ export function AnnouncementDetailScreen() {
           </HStack>
         </VStack>
       </Box>
+      <ConfirmDeleteModal
+        isOpen={showDelete}
+        onCancel={() => setShowDelete(false)}
+        onConfirm={() => setShowDelete(false)}
+      />
     </Box>
   );
 }
