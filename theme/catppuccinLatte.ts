@@ -43,12 +43,22 @@ export const theme = extendTheme({
     ...catppuccinLatte,
   },
   fontConfig: {
-    // Add custom font config if needed
+    Geist: {
+      100: 'Geist-Thin',
+      200: 'Geist-ExtraLight',
+      300: 'Geist-Light',
+      400: 'Geist-Regular',
+      500: 'Geist-Medium',
+      600: 'Geist-SemiBold',
+      700: 'Geist-Bold',
+      800: 'Geist-ExtraBold',
+      900: 'Geist-Black',
+    },
   },
   fonts: {
-    heading: 'System',
-    body: 'System',
-    mono: 'System',
+    heading: 'Geist',
+    body: 'Geist',
+    mono: 'Geist',
   },
   components: {
     // You can customize NativeBase components here
