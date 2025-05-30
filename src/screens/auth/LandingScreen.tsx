@@ -3,7 +3,7 @@ import { Box, Button, Center, Text, VStack } from 'native-base';
 import { useNavigation } from '@react-navigation/native';
 import { SvgXml } from 'react-native-svg';
 import { GestureResponderEvent } from 'react-native';
-import { AuthStackParamList } from '../../navigation/types';
+import { AuthStackParamList } from 'src/navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const casaSvgXml = require('../../assets/svgs/casa.svg');
