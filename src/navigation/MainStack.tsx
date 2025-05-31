@@ -1,11 +1,11 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from './types';
-import { MainTabs } from './MainTabs';
 import { AnnouncementsScreen } from 'src/screens/main/AnnouncementsScreen';
 import { UsersScreen } from 'src/screens/main/UsersScreen';
 import { PersonalInfoScreen } from 'src/screens/main/PersonalInfoScreen';
 import { AnnouncementDetailScreen } from '../screens/main/AnnouncementDetailScreen';
 import { UserDetailScreen } from '../screens/main/UserDetailScreen';
+import { MainNavigationScreen } from '../screens/main/MainNavigationScreen';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -16,7 +16,7 @@ export function MainStack() {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="Home" component={MainNavigationScreen} />
       <Stack.Screen name="Announcements" component={AnnouncementsScreen} />
       <Stack.Screen name="Users" component={UsersScreen} />
       <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
