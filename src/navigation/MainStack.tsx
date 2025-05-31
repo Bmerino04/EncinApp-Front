@@ -4,6 +4,8 @@ import { MainTabs } from './MainTabs';
 import { AnnouncementsScreen } from 'src/screens/main/AnnouncementsScreen';
 import { UsersScreen } from 'src/screens/main/UsersScreen';
 import { PersonalInfoScreen } from 'src/screens/main/PersonalInfoScreen';
+import { AnnouncementDetailScreen } from '../screens/main/AnnouncementDetailScreen';
+import { UserDetailScreen } from '../screens/main/UserDetailScreen';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -20,7 +22,7 @@ export function MainStack() {
       <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
       <Stack.Screen name="AnnouncementDetail" component={AnnouncementDetailScreen} />
       <Stack.Screen name="UserDetail" component={UserDetailScreen} />
-      <Stack.Screen name="EditUser" component={EditUserScreen} />
+      {/* <Stack.Screen name="EditUser" component={EditUserScreen} /> */}
     </Stack.Navigator>
   );
 } 

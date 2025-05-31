@@ -6,6 +6,7 @@ import * as Yup from 'yup';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from 'src/navigation/types';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const LoginSchema = Yup.object().shape({
   rut: Yup.string().required('El rut es requerido'),
@@ -26,13 +27,10 @@ export function LoginScreen() {
   };
 
   return (
-    <Box flex={1} bg={{
-      linearGradient: {
-        colors: ['#a18cd1', '#fbc2eb'],
-        start: [0, 0],
-        end: [1, 1],
-      },
-    }}>
+    <LinearGradient
+      colors={['#a18cd1', '#fbc2eb']}
+      style={{ flex: 1 }}
+    >
       <Center flex={1} px={6}>
         <Box w="100%" maxW="350" bg="white" opacity={0.9} borderRadius={20} p={6} shadow={4}>
           <Text fontFamily="Geist" fontWeight="700" fontSize="2xl" textAlign="center" mb={6}>
@@ -104,6 +102,6 @@ export function LoginScreen() {
           </Formik>
         </Box>
       </Center>
-    </Box>
+    </LinearGradient>
   );
 } 

@@ -12,8 +12,8 @@ export function MainTabs() {
       }}
     >
       <Tab.Screen name="Announcements" component={MainNavigationScreen} />
-      <Tab.Screen name="Users" component={UsersScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      {/* <Tab.Screen name="Users" component={UsersScreen} /> */}
+      {/* <Tab.Screen name="Profile" component={ProfileScreen} /> */}
     </Tab.Navigator>
   );
 } 
