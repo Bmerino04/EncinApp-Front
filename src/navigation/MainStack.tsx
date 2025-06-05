@@ -6,6 +6,7 @@ import { PersonalInfoScreen } from 'src/screens/main/PersonalInfoScreen';
 import { AnnouncementDetailScreen } from '../screens/main/AnnouncementDetailScreen';
 import { UserDetailScreen } from '../screens/main/UserDetailScreen';
 import { MainNavigationScreen } from '../screens/main/MainNavigationScreen';
+import { UserRegisterScreen } from '../screens/main/UserRegisterScreen';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -22,6 +23,7 @@ export function MainStack() {
       <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
       <Stack.Screen name="AnnouncementDetail" component={AnnouncementDetailScreen} />
       <Stack.Screen name="UserDetail" component={UserDetailScreen} />
+      <Stack.Screen name="UserRegister" component={UserRegisterScreen} />
       {/* <Stack.Screen name="EditUser" component={EditUserScreen} /> */}
     </Stack.Navigator>
   );

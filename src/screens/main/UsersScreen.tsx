@@ -57,7 +57,7 @@ export function UsersScreen() {
           icon={<Icon as={MaterialCommunityIcons} name="account-plus-outline" size={6} color="muted.500" />}
           borderRadius="full"
           variant="ghost"
-          onPress={() => {}}
+          onPress={() => navigation.navigate('UserRegister')}
         />
       </Box>
       <FlatList
