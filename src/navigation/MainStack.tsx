@@ -7,6 +7,7 @@ import { AnnouncementDetailScreen } from '../screens/main/AnnouncementDetailScre
 import { UserDetailScreen } from '../screens/main/UserDetailScreen';
 import { MainNavigationScreen } from '../screens/main/MainNavigationScreen';
 import { UserRegisterScreen } from '../screens/main/UserRegisterScreen';
+import { EditUserFieldScreen } from '../screens/main/EditUserFieldScreen';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -24,6 +25,9 @@ export function MainStack() {
       <Stack.Screen name="AnnouncementDetail" component={AnnouncementDetailScreen} />
       <Stack.Screen name="UserDetail" component={UserDetailScreen} />
       <Stack.Screen name="UserRegister" component={UserRegisterScreen} />
+      <Stack.Screen name="EditUserName" component={EditUserFieldScreen} />
+      <Stack.Screen name="EditUserAddress" component={EditUserFieldScreen} />
+      <Stack.Screen name="EditUserRut" component={EditUserFieldScreen} />
       {/* <Stack.Screen name="EditUser" component={EditUserScreen} /> */}
     </Stack.Navigator>
   );

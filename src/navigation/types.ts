@@ -17,6 +17,9 @@ export type MainStackParamList = {
   UserDetail: { id: string };
   EditUser: { id: string };
   UserRegister: undefined;
+  EditUserName: { id: string; value: string };
+  EditUserAddress: { id: string; value: string };
+  EditUserRut: { id: string; value: string };
 };
 
 export type MainTabParamList = {

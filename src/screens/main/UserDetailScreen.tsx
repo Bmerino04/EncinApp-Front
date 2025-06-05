@@ -4,6 +4,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
 import { MainStackParamList } from 'src/navigation/types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const mockUsers = [
   { id: 1, nombre: 'Bernardino Jara', rut: '12.345.677-9', direccion: 'Santa Carolina 125', pin: '', disponibilidad: false, permisos: [] },
@@ -13,7 +14,7 @@ const mockUsers = [
 type UserDetailRouteProp = RouteProp<MainStackParamList, 'UserDetail'>;
 
 export function UserDetailScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const route = useRoute<UserDetailRouteProp>();
   const { id } = route.params;
   const user = mockUsers.find(u => u.id === Number(id));
@@ -76,10 +77,16 @@ export function UserDetailScreen() {
       </VStack>
       <Box bg="white" borderRadius={20} shadow={2} mx={3}>
         <VStack divider={<Divider />}>
-          <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Nombre</Text></Box></Pressable>
-          <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Dirección</Text></Box></Pressable>
+          <Pressable onPress={() => navigation.navigate('EditUserName', { id: String(user.id), value: user.nombre })}>
+            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Nombre</Text></Box>
+          </Pressable>
+          <Pressable onPress={() => navigation.navigate('EditUserAddress', { id: String(user.id), value: user.direccion })}>
+            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Dirección</Text></Box>
+          </Pressable>
           <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Pin</Text></Box></Pressable>
-          <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Rut</Text></Box></Pressable>
+          <Pressable onPress={() => navigation.navigate('EditUserRut', { id: String(user.id), value: user.rut })}>
+            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Rut</Text></Box>
+          </Pressable>
           <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Gestionar Permisos</Text></Box></Pressable>
           <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Transferir Presidencia</Text></Box></Pressable>
           <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Eliminar Cuenta</Text></Box></Pressable>
