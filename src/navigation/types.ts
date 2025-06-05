@@ -21,6 +21,7 @@ export type MainStackParamList = {
   EditUserAddress: { id: string; value: string };
   EditUserRut: { id: string; value: string };
   EditUserPin: { id: string };
+  CreateAnnouncement: undefined;
 };
 
 export type MainTabParamList = {

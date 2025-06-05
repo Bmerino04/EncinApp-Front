@@ -10,7 +10,7 @@ const NAV_BUTTONS = [
     icon: <MaterialIcons name="map" size={36} color="#45475a" />, label: 'Mapa', onPress: () => {},
   },
   {
-    icon: <MaterialIcons name="edit" size={36} color="#45475a" />, label: 'Crear anuncio', onPress: () => {},
+    icon: <MaterialIcons name="edit" size={36} color="#45475a" />, label: 'Crear anuncio', onPress: (nav: any) => nav.navigate('CreateAnnouncement'),
   },
   {
     icon: <MaterialIcons name="campaign" size={36} color="#45475a" />, label: 'Noticias', onPress: (nav: any) => nav.navigate('Announcements'),

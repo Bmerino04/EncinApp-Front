@@ -9,6 +9,7 @@ import { MainNavigationScreen } from '../screens/main/MainNavigationScreen';
 import { UserRegisterScreen } from '../screens/main/UserRegisterScreen';
 import { EditUserFieldScreen } from '../screens/main/EditUserFieldScreen';
 import { EditUserPinScreen } from '../screens/main/EditUserPinScreen';
+import { CreateAnnouncementScreen } from '../screens/main/CreateAnnouncementScreen';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -30,6 +31,7 @@ export function MainStack() {
       <Stack.Screen name="EditUserAddress" component={EditUserFieldScreen} />
       <Stack.Screen name="EditUserRut" component={EditUserFieldScreen} />
       <Stack.Screen name="EditUserPin" component={EditUserPinScreen} />
+      <Stack.Screen name="CreateAnnouncement" component={CreateAnnouncementScreen} />
       {/* <Stack.Screen name="EditUser" component={EditUserScreen} /> */}
     </Stack.Navigator>
   );
