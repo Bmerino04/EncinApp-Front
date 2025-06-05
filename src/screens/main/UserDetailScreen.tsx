@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Text, IconButton, Icon, StatusBar, VStack, Divider, Pressable } from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
 import { MainStackParamList } from 'src/navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { ManagePermissionsModal } from 'src/components/common/ManagePermissionsModal';
 
 const mockUsers = [
   { id: 1, nombre: 'Bernardino Jara', rut: '12.345.677-9', direccion: 'Santa Carolina 125', pin: '', disponibilidad: false, permisos: [] },
@@ -26,6 +27,9 @@ export function UserDetailScreen() {
       </Box>
     );
   }
+
+  const [showPermModal, setShowPermModal] = useState(false);
+  const [permisos, setPermisos] = useState<string[]>(user.permisos || []);
 
   return (
     <Box flex={1} bg="#f5f6fa">
@@ -89,11 +93,22 @@ export function UserDetailScreen() {
           <Pressable onPress={() => navigation.navigate('EditUserRut', { id: String(user.id), value: user.rut })}>
             <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Rut</Text></Box>
           </Pressable>
-          <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Gestionar Permisos</Text></Box></Pressable>
+          <Pressable onPress={() => setShowPermModal(true)}>
+            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Gestionar Permisos</Text></Box>
+          </Pressable>
           <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Transferir Presidencia</Text></Box></Pressable>
           <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Eliminar Cuenta</Text></Box></Pressable>
         </VStack>
       </Box>
+      <ManagePermissionsModal
+        isOpen={showPermModal}
+        onClose={() => setShowPermModal(false)}
+        currentPermissions={permisos}
+        onSave={perms => {
+          setPermisos(perms);
+          setShowPermModal(false);
+        }}
+      />
     </Box>
   );
 } 
