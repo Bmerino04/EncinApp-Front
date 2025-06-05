@@ -7,6 +7,7 @@ import { MainStackParamList } from 'src/navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ManagePermissionsModal } from 'src/components/common/ManagePermissionsModal';
 import { TransferPresidencyModal } from 'src/components/common/TransferPresidencyModal';
+import { DeleteUserModal } from 'src/components/common/DeleteUserModal';
 
 const mockUsers = [
   { id: 1, nombre: 'Bernardino Jara', rut: '12.345.677-9', direccion: 'Santa Carolina 125', pin: '', disponibilidad: false, permisos: [], esPresidente: false },
@@ -33,6 +34,7 @@ export function UserDetailScreen() {
   const [permisos, setPermisos] = useState<string[]>(user.permisos || []);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [esPresidente, setEsPresidente] = useState(user.esPresidente || false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   return (
     <Box flex={1} bg="#f5f6fa">
@@ -102,7 +104,9 @@ export function UserDetailScreen() {
           <Pressable onPress={() => setShowTransferModal(true)}>
             <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Transferir Presidencia</Text></Box>
           </Pressable>
-          <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Eliminar Cuenta</Text></Box></Pressable>
+          <Pressable onPress={() => setShowDeleteModal(true)}>
+            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Eliminar Cuenta</Text></Box>
+          </Pressable>
         </VStack>
       </Box>
       <ManagePermissionsModal
@@ -122,6 +126,14 @@ export function UserDetailScreen() {
           setShowTransferModal(false);
         }}
         userName={user.nombre}
+      />
+      <DeleteUserModal
+        isOpen={showDeleteModal}
+        onCancel={() => setShowDeleteModal(false)}
+        onConfirm={() => {
+          setShowDeleteModal(false);
+          navigation.goBack();
+        }}
       />
     </Box>
   );
