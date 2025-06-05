@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, Text, IconButton, Icon, StatusBar, VStack, Divider, Pressable, Switch, HStack } from 'native-base';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
+import { LogoutConfirmModal } from 'src/components/common/LogoutConfirmModal';
 
 const mockUser = {
   nombre: 'Admin_Presidente',
@@ -13,6 +14,7 @@ const mockUser = {
 export function PersonalInfoScreen() {
   const navigation = useNavigation();
   const [disponibilidad, setDisponibilidad] = useState(mockUser.disponibilidad);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   return (
     <Box flex={1} bg="#f5f6fa">
@@ -73,9 +75,17 @@ export function PersonalInfoScreen() {
           <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar nombre de usuario</Text></Box></Pressable>
           <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Dirección</Text></Box></Pressable>
           <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar pin</Text></Box></Pressable>
-          <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cerrar sesión</Text></Box></Pressable>
+          <Pressable onPress={() => setShowLogoutModal(true)}><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cerrar sesión</Text></Box></Pressable>
         </VStack>
       </Box>
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onCancel={() => setShowLogoutModal(false)}
+        onConfirm={() => {
+          setShowLogoutModal(false);
+          navigation.reset({ index: 0, routes: [{ name: 'Auth' }] });
+        }}
+      />
     </Box>
   );
 } 
