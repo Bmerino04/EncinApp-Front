@@ -83,7 +83,9 @@ export function UserDetailScreen() {
           <Pressable onPress={() => navigation.navigate('EditUserAddress', { id: String(user.id), value: user.direccion })}>
             <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Dirección</Text></Box>
           </Pressable>
-          <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Pin</Text></Box></Pressable>
+          <Pressable onPress={() => navigation.navigate('EditUserPin', { id: String(user.id) })}>
+            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Pin</Text></Box>
+          </Pressable>
           <Pressable onPress={() => navigation.navigate('EditUserRut', { id: String(user.id), value: user.rut })}>
             <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Rut</Text></Box>
           </Pressable>

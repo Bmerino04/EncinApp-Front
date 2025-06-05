@@ -1,0 +1,166 @@
+import React, { useState } from 'react';
+import { Box, Button, FormControl, Input, Text, VStack, IconButton, Icon, StatusBar } from 'native-base';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import { MaterialIcons } from '@expo/vector-icons';
+import { RouteProp } from '@react-navigation/native';
+import { MainStackParamList } from 'src/navigation/types';
+
+type EditUserPinRoute = RouteProp<MainStackParamList, 'EditUserPin'>;
+
+const PinSchema = Yup.object().shape({
+  currentPin: Yup.string().required('El pin actual es requerido'),
+  newPin: Yup.string().required('El nuevo pin es requerido').min(4, 'Mínimo 4 dígitos'),
+  repeatPin: Yup.string()
+    .oneOf([Yup.ref('newPin')], 'Los pines no coinciden')
+    .required('Repite el nuevo pin'),
+});
+
+export function EditUserPinScreen() {
+  const navigation = useNavigation();
+  const route = useRoute<EditUserPinRoute>();
+  const { id } = route.params;
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showRepeat, setShowRepeat] = useState(false);
+
+  const handleSave = () => {
+    // Mock save logic
+    setTimeout(() => {
+      navigation.goBack();
+    }, 500);
+  };
+
+  return (
+    <Box flex={1} bg="#f5f6fa">
+      <StatusBar barStyle="dark-content" />
+      <Box safeAreaTop bg="#f5f6fa" />
+      <Box
+        flexDirection="row"
+        alignItems="center"
+        bg="white"
+        borderRadius={16}
+        mx={3}
+        mt={3}
+        mb={6}
+        px={2}
+        py={2}
+        shadow={1}
+      >
+        <IconButton
+          icon={<Icon as={MaterialIcons} name="arrow-back-ios" size={5} color="primary" />}
+          borderRadius="full"
+          variant="ghost"
+          onPress={() => navigation.goBack()}
+        />
+        <Text
+          fontFamily="Geist"
+          fontWeight="600"
+          fontSize="lg"
+          color="primary"
+          flex={1}
+          textAlign="center"
+          mr={7}
+        >
+          Cambiar contraseña
+        </Text>
+      </Box>
+      <Formik
+        initialValues={{ currentPin: '', newPin: '', repeatPin: '' }}
+        validationSchema={PinSchema}
+        onSubmit={handleSave}
+      >
+        {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
+          <VStack space={4} px={6} mt={2}>
+            <FormControl isInvalid={!!(touched.currentPin && errors.currentPin)}>
+              <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
+                Pin actual
+              </FormControl.Label>
+              <Input
+                placeholder="****"
+                fontFamily="Geist"
+                value={values.currentPin}
+                onChangeText={handleChange('currentPin')}
+                onBlur={handleBlur('currentPin')}
+                type={showCurrent ? 'text' : 'password'}
+                bg="white"
+                borderRadius={8}
+                InputRightElement={
+                  <Icon
+                    as={<MaterialIcons name={showCurrent ? 'visibility' : 'visibility-off'} />}
+                    size={5}
+                    mr="2"
+                    color="muted.400"
+                    onPress={() => setShowCurrent(!showCurrent)}
+                  />
+                }
+              />
+              <FormControl.ErrorMessage>{errors.currentPin}</FormControl.ErrorMessage>
+            </FormControl>
+            <FormControl isInvalid={!!(touched.newPin && errors.newPin)}>
+              <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
+                Nuevo Pin
+              </FormControl.Label>
+              <Input
+                placeholder="****"
+                fontFamily="Geist"
+                value={values.newPin}
+                onChangeText={handleChange('newPin')}
+                onBlur={handleBlur('newPin')}
+                type={showNew ? 'text' : 'password'}
+                bg="white"
+                borderRadius={8}
+                InputRightElement={
+                  <Icon
+                    as={<MaterialIcons name={showNew ? 'visibility' : 'visibility-off'} />}
+                    size={5}
+                    mr="2"
+                    color="muted.400"
+                    onPress={() => setShowNew(!showNew)}
+                  />
+                }
+              />
+              <FormControl.ErrorMessage>{errors.newPin}</FormControl.ErrorMessage>
+            </FormControl>
+            <FormControl isInvalid={!!(touched.repeatPin && errors.repeatPin)}>
+              <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
+                Repetir nuevo Pin
+              </FormControl.Label>
+              <Input
+                placeholder="****"
+                fontFamily="Geist"
+                value={values.repeatPin}
+                onChangeText={handleChange('repeatPin')}
+                onBlur={handleBlur('repeatPin')}
+                type={showRepeat ? 'text' : 'password'}
+                bg="white"
+                borderRadius={8}
+                InputRightElement={
+                  <Icon
+                    as={<MaterialIcons name={showRepeat ? 'visibility' : 'visibility-off'} />}
+                    size={5}
+                    mr="2"
+                    color="muted.400"
+                    onPress={() => setShowRepeat(!showRepeat)}
+                  />
+                }
+              />
+              <FormControl.ErrorMessage>{errors.repeatPin}</FormControl.ErrorMessage>
+            </FormControl>
+            <Button
+              mt={4}
+              w="100%"
+              bg="#7f9cf5"
+              _text={{ fontFamily: 'Geist', fontWeight: '600', fontSize: 'md' }}
+              borderRadius={12}
+              onPress={handleSubmit as any}
+            >
+              Guardar
+            </Button>
+          </VStack>
+        )}
+      </Formik>
+    </Box>
+  );
+} 

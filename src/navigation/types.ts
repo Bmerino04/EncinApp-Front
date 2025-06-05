@@ -20,6 +20,7 @@ export type MainStackParamList = {
   EditUserName: { id: string; value: string };
   EditUserAddress: { id: string; value: string };
   EditUserRut: { id: string; value: string };
+  EditUserPin: { id: string };
 };
 
 export type MainTabParamList = {
