@@ -6,10 +6,11 @@ import { RouteProp } from '@react-navigation/native';
 import { MainStackParamList } from 'src/navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ManagePermissionsModal } from 'src/components/common/ManagePermissionsModal';
+import { TransferPresidencyModal } from 'src/components/common/TransferPresidencyModal';
 
 const mockUsers = [
-  { id: 1, nombre: 'Bernardino Jara', rut: '12.345.677-9', direccion: 'Santa Carolina 125', pin: '', disponibilidad: false, permisos: [] },
-  { id: 2, nombre: 'José Soto', rut: '11.222.333-4', direccion: 'Av. Encinas 0472', pin: '', disponibilidad: true, permisos: [] },
+  { id: 1, nombre: 'Bernardino Jara', rut: '12.345.677-9', direccion: 'Santa Carolina 125', pin: '', disponibilidad: false, permisos: [], esPresidente: false },
+  { id: 2, nombre: 'José Soto', rut: '11.222.333-4', direccion: 'Av. Encinas 0472', pin: '', disponibilidad: true, permisos: [], esPresidente: true },
 ];
 
 type UserDetailRouteProp = RouteProp<MainStackParamList, 'UserDetail'>;
@@ -30,6 +31,8 @@ export function UserDetailScreen() {
 
   const [showPermModal, setShowPermModal] = useState(false);
   const [permisos, setPermisos] = useState<string[]>(user.permisos || []);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [esPresidente, setEsPresidente] = useState(user.esPresidente || false);
 
   return (
     <Box flex={1} bg="#f5f6fa">
@@ -96,7 +99,9 @@ export function UserDetailScreen() {
           <Pressable onPress={() => setShowPermModal(true)}>
             <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Gestionar Permisos</Text></Box>
           </Pressable>
-          <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Transferir Presidencia</Text></Box></Pressable>
+          <Pressable onPress={() => setShowTransferModal(true)}>
+            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Transferir Presidencia</Text></Box>
+          </Pressable>
           <Pressable><Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Eliminar Cuenta</Text></Box></Pressable>
         </VStack>
       </Box>
@@ -108,6 +113,15 @@ export function UserDetailScreen() {
           setPermisos(perms);
           setShowPermModal(false);
         }}
+      />
+      <TransferPresidencyModal
+        isOpen={showTransferModal}
+        onCancel={() => setShowTransferModal(false)}
+        onConfirm={() => {
+          setEsPresidente(false); // This user loses presidency
+          setShowTransferModal(false);
+        }}
+        userName={user.nombre}
       />
     </Box>
   );
