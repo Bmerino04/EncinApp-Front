@@ -1,13 +1,45 @@
-import React from 'react';
-import { Modal, Button, Text, VStack, HStack } from 'native-base';
+import React, { useState } from 'react';
+import { Modal, Button, Text, VStack, HStack, useToast } from 'native-base';
+import { api } from 'src/api/axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
 
 interface DeleteUserModalProps {
   isOpen: boolean;
   onCancel: () => void;
-  onConfirm: () => void;
+  idUsuario: number;
 }
 
-export function DeleteUserModal({ isOpen, onCancel, onConfirm }: DeleteUserModalProps) {
+export function DeleteUserModal({ isOpen, onCancel, idUsuario }: DeleteUserModalProps) {
+  const toast = useToast();
+  const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
+
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        toast.show({ description: 'Token no encontrado, por favor inicia sesión' });
+        setLoading(false);
+        return;
+      }
+
+      await api.delete(`/usuarios/${idUsuario}`, {
+        headers: { Authorization: token },
+      });
+
+      toast.show({ description: 'Usuario eliminado correctamente' });
+      onCancel(); // cerrar modal
+      navigation.goBack(); // regresar pantalla
+    } catch (error) {
+      console.error(error);
+      toast.show({ description: 'Error al eliminar usuario' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onCancel} avoidKeyboard>
       <Modal.Content borderRadius={16} maxW="90%">
@@ -32,7 +64,8 @@ export function DeleteUserModal({ isOpen, onCancel, onConfirm }: DeleteUserModal
               <Button
                 bg="red.500"
                 borderRadius={8}
-                onPress={onConfirm}
+                onPress={handleDelete}
+                isLoading={loading}
                 _text={{ color: 'white', fontFamily: 'Geist', fontWeight: '600' }}
               >
                 Eliminar
@@ -43,4 +76,4 @@ export function DeleteUserModal({ isOpen, onCancel, onConfirm }: DeleteUserModal
       </Modal.Content>
     </Modal>
   );
-} 
+}
