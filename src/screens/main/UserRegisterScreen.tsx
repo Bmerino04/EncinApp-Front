@@ -7,6 +7,7 @@ import * as Yup from 'yup';
 import { MaterialIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from 'src/navigation/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from 'src/api/axios';
 
 const RegisterSchema = Yup.object().shape({
@@ -34,29 +35,39 @@ export function UserRegisterScreen() {
   }) => {
     setSubmitting(true);
     try {
-      // Construimos el body con los campos requeridos por tu endpoint
+      const token = await AsyncStorage.getItem('userToken');
+
+      if (!token) {
+        Alert.alert('Error de autenticación', 'No se ha encontrado el token.');
+        setSubmitting(false);
+        return;
+      }
+
       const payload = {
         nombre: values.nombre,
         rut: values.rut,
         pin: values.pin,
-        es_presidente: false,    // Valor por defecto
-        disponibilidad: false,   // Valor por defecto
-        direccion: '',           // Puedes cambiarlo o agregar un campo en el formulario si quieres
+        es_presidente: false,
+        disponibilidad: false,
+        direccion: '',
       };
 
-      await api.post('/usuarios', payload);
+      await api.post('/usuarios', payload, {
+        headers: {
+          Authorization: token,
+        },
+      });
 
-      // Si llega aquí, la petición fue exitosa: volvemos a la pantalla anterior
       navigation.goBack();
     } catch (error: any) {
       console.error('Error en registro:', error.response?.data || error.message);
-      // Mostrar alerta genérica o con el mensaje del backend si existe
       const mensaje = error.response?.data?.message || 'No se pudo registrar el usuario.';
       Alert.alert('Error al registrar', mensaje);
     } finally {
       setSubmitting(false);
     }
   };
+
 
   return (
     <Box flex={1} bg="#f5f6fa">
