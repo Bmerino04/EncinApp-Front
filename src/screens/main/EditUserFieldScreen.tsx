@@ -1,11 +1,13 @@
 import React from 'react';
-import { Box, Button, FormControl, Input, Text, VStack, IconButton, Icon, StatusBar } from 'native-base';
+import { Box, Button, FormControl, Input, Text, VStack, IconButton, Icon, StatusBar, useToast } from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MainStackParamList } from 'src/navigation/types';
+import { api } from 'src/api/axios';
 
 type EditUserFieldRoute =
   | RouteProp<MainStackParamList, 'EditUserName'>
@@ -18,23 +20,27 @@ const FIELD_CONFIG = {
     placeholder: 'nombre de usuario',
     validation: Yup.string().required('El nombre es requerido'),
     title: 'Cambiar nombre de usuario',
+    fieldKey: 'nombre',
   },
   EditUserAddress: {
     label: 'Dirección nueva',
     placeholder: 'dirección',
     validation: Yup.string().required('La dirección es requerida'),
     title: 'Cambiar dirección',
+    fieldKey: 'direccion',
   },
   EditUserRut: {
     label: 'Rut nuevo',
     placeholder: 'rut',
     validation: Yup.string().required('El rut es requerido'),
     title: 'Cambiar rut',
+    fieldKey: 'rut',
   },
 };
 
 export function EditUserFieldScreen() {
   const navigation = useNavigation();
+  const toast = useToast();
   const route = useRoute<EditUserFieldRoute>();
   // @ts-ignore
   const { id, value } = route.params;
@@ -46,11 +52,23 @@ export function EditUserFieldScreen() {
     field: config.validation,
   });
 
-  const handleSave = () => {
-    // Mock save logic
-    setTimeout(() => {
+  const handleSave = async (values: { field: string }) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        toast.show({ description: 'Token no encontrado, por favor inicia sesión' });
+        return;
+      }
+      const body = { [config.fieldKey]: values.field };
+      await api.patch(`/usuarios/${id}`, body, {
+        headers: { Authorization: token },
+      });
+      toast.show({ description: 'Usuario actualizado correctamente' });
       navigation.goBack();
-    }, 500);
+    } catch (error) {
+      console.error(error);
+      toast.show({ description: 'Error actualizando usuario' });
+    }
   };
 
   return (
