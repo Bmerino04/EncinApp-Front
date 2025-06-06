@@ -1,5 +1,16 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Box, Text, IconButton, Icon, StatusBar, VStack, Divider, Pressable, Spinner, Center } from 'native-base';
+import {
+  Box,
+  Text,
+  IconButton,
+  Icon,
+  StatusBar,
+  VStack,
+  Divider,
+  Pressable,
+  Spinner,
+  Center,
+} from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
@@ -10,6 +21,7 @@ import { TransferPresidencyModal } from 'src/components/common/TransferPresidenc
 import { DeleteUserModal } from 'src/components/common/DeleteUserModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from 'src/api/axios';
+import { jwtDecode } from 'jwt-decode';
 
 type UserDetailRouteProp = RouteProp<MainStackParamList, 'UserDetail'>;
 
@@ -35,27 +47,25 @@ export function UserDetailScreen() {
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [esPresidente, setEsPresidente] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   const fetchUsuario = useCallback(async () => {
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem('userToken');
-      if (!token) {
-        console.log('No token found');
-        setUser(null);
-        setLoading(false);
-        return;
-      }
+      if (!token) throw new Error('Token no encontrado');
+
+      const decoded: any = jwtDecode(token);
+      const currentId = decoded.id;
+      setCurrentUserId(currentId);
 
       const response = await api.get(`/usuarios/${id}`, {
-        headers: {
-          Authorization: token,
-        },
+        headers: { Authorization: token },
       });
 
       const datos: UsuarioApi = response.data.usuarioEncontrado;
       setUser(datos);
-      setPermisos([]); 
+      setPermisos([]);
       setEsPresidente(datos.es_presidente);
     } catch (error) {
       console.error('Error fetching user detail:', error);
@@ -95,6 +105,8 @@ export function UserDetailScreen() {
     );
   }
 
+  const isViewingOwnProfile = currentUserId === user.id_usuario;
+
   return (
     <Box flex={1} bg="#f5f6fa">
       <StatusBar barStyle="dark-content" />
@@ -130,7 +142,6 @@ export function UserDetailScreen() {
         </Text>
       </Box>
 
-      {/* Datos del Usuario */}
       <VStack alignItems="center" space={1} mb={8}>
         <Text fontFamily="Geist" fontWeight="600" fontSize="lg" mt={2}>
           {user.nombre}
@@ -146,7 +157,6 @@ export function UserDetailScreen() {
         </Text>
       </VStack>
 
-      {/* Opciones de acción */}
       <Box bg="white" borderRadius={20} shadow={2} mx={3}>
         <VStack divider={<Divider />}>
           <Pressable
@@ -158,9 +168,7 @@ export function UserDetailScreen() {
             }
           >
             <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cambiar Nombre
-              </Text>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Nombre</Text>
             </Box>
           </Pressable>
 
@@ -173,9 +181,7 @@ export function UserDetailScreen() {
             }
           >
             <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cambiar Dirección
-              </Text>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Dirección</Text>
             </Box>
           </Pressable>
 
@@ -187,9 +193,7 @@ export function UserDetailScreen() {
             }
           >
             <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cambiar Pin
-              </Text>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Pin</Text>
             </Box>
           </Pressable>
 
@@ -202,47 +206,37 @@ export function UserDetailScreen() {
             }
           >
             <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cambiar Rut
-              </Text>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Rut</Text>
             </Box>
           </Pressable>
 
           <Pressable onPress={() => setShowPermModal(true)}>
             <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Gestionar Permisos
-              </Text>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Gestionar Permisos</Text>
             </Box>
           </Pressable>
 
           <Pressable onPress={() => setShowTransferModal(true)}>
             <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Transferir Presidencia
-              </Text>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Transferir Presidencia</Text>
             </Box>
           </Pressable>
 
-          <Pressable onPress={() => setShowDeleteModal(true)}>
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Eliminar Cuenta
-              </Text>
-            </Box>
-          </Pressable>
+          {!isViewingOwnProfile && (
+            <Pressable onPress={() => setShowDeleteModal(true)}>
+              <Box px={5} py={4}>
+                <Text fontFamily="Geist" fontWeight="400" fontSize="md">Eliminar Cuenta</Text>
+              </Box>
+            </Pressable>
+          )}
         </VStack>
       </Box>
 
-      {/* Modales de acción */}
+      {/* Modales */}
       <ManagePermissionsModal
         isOpen={showPermModal}
         onClose={() => setShowPermModal(false)}
-        currentPermissions={permisos}
-        onSave={(perms) => {
-          setPermisos(perms);
-          setShowPermModal(false);
-        }}
+        idUsuario={user.id_usuario}
       />
 
       <TransferPresidencyModal
@@ -258,10 +252,7 @@ export function UserDetailScreen() {
       <DeleteUserModal
         isOpen={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
-        onConfirm={() => {
-          setShowDeleteModal(false);
-          navigation.goBack();
-        }}
+        idUsuario={user.id_usuario}
       />
     </Box>
   );
