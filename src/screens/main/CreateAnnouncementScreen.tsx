@@ -1,33 +1,77 @@
 import React, { useState } from 'react';
-import { Box, Button, FormControl, Input, Text, VStack, IconButton, Icon, StatusBar, TextArea, Pressable, HStack } from 'native-base';
+import {
+  Box,
+  Button,
+  FormControl,
+  Input,
+  Text,
+  VStack,
+  IconButton,
+  Icon,
+  StatusBar,
+  TextArea,
+  Pressable,
+  HStack,
+  useToast,
+} from 'native-base';
 import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from 'src/api/axios';
+import { jwtDecode } from 'jwt-decode';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from 'src/navigation/types';
+import { Platform } from 'react-native';
+
+type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'CreateAnnouncement'>;
+
+interface TokenPayload {
+  id_usuario: number;
+}
 
 const AnnouncementSchema = Yup.object().shape({
   title: Yup.string().required('El título es requerido'),
   description: Yup.string().required('La descripción es requerida'),
-  date: Yup.date().required('La fecha es requerida'),
+  date: Yup.string().required('La fecha es requerida'),
   location: Yup.string(),
 });
 
 export function CreateAnnouncementScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
+  const toast = useToast();
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [image, setImage] = useState<string | null>(null);
 
-  const handlePickImage = async (setFieldValue: any) => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      quality: 0.7,
-    });
-    if (!result.canceled && result.assets && result.assets[0]?.uri) {
-      setImage(result.assets[0].uri);
-      setFieldValue('image', result.assets[0].uri);
+  const handleSubmitAnnouncement = async (values: any) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        toast.show({ description: 'Token no encontrado. Inicia sesión' });
+        return;
+      }
+
+      const decoded = jwtDecode<TokenPayload>(token);
+      const userId = decoded.id_usuario;
+
+      const payload = {
+        titulo: values.title,
+        cuerpo: values.description,
+        fecha_relacionada: values.date,
+        direccion: values.location,
+        fecha_emision: new Date().toISOString().split('T')[0],
+      };
+
+      await api.post(`/anuncios/${userId}`, payload, {
+        headers: { Authorization: token },
+      });
+
+      toast.show({ description: 'Anuncio publicado correctamente' });
+      navigation.goBack();
+    } catch (error) {
+      console.error(error);
+      toast.show({ description: 'Error al publicar el anuncio' });
     }
   };
 
@@ -65,15 +109,11 @@ export function CreateAnnouncementScreen() {
           Crear Anuncio
         </Text>
       </Box>
+
       <Formik
-        initialValues={{ title: '', description: '', date: '', location: '', image: '' }}
+        initialValues={{ title: '', description: '', date: '', location: '' }}
         validationSchema={AnnouncementSchema}
-        onSubmit={values => {
-          // Mock submit
-          setTimeout(() => {
-            navigation.goBack();
-          }, 500);
-        }}
+        onSubmit={handleSubmitAnnouncement}
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue }) => (
           <VStack space={4} px={6}>
@@ -92,6 +132,7 @@ export function CreateAnnouncementScreen() {
               />
               <FormControl.ErrorMessage>{errors.title}</FormControl.ErrorMessage>
             </FormControl>
+
             <FormControl isInvalid={!!(touched.description && errors.description)}>
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 Descripción del anuncio
@@ -100,14 +141,14 @@ export function CreateAnnouncementScreen() {
                 placeholder="Ingrese la descripción del anuncio."
                 fontFamily="Geist"
                 value={values.description}
-                onChange={e => handleChange('description')(e.nativeEvent.text)}
+                onChangeText={(text) => setFieldValue('description', text)}
                 onBlur={handleBlur('description')}
                 bg="white"
                 borderRadius={8}
-                h={20}
-              />
+                h={20} tvParallaxProperties={undefined} onTextInput={undefined} autoCompleteType={undefined}              />
               <FormControl.ErrorMessage>{errors.description}</FormControl.ErrorMessage>
             </FormControl>
+
             <FormControl isInvalid={!!(touched.date && errors.date)}>
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 Fecha relacionada
@@ -115,24 +156,36 @@ export function CreateAnnouncementScreen() {
               <Pressable onPress={() => setShowDatePicker(true)}>
                 <HStack alignItems="center" bg="white" borderRadius={8} px={3} py={3}>
                   <Text fontFamily="Geist" color={values.date ? 'black' : 'muted.400'}>
-                    {values.date ? new Date(values.date).toLocaleDateString() : 'Selecciona la fecha'}
+                    {values.date
+                      ? new Date(values.date).toLocaleDateString()
+                      : 'Selecciona la fecha'}
                   </Text>
-                  <Icon as={MaterialIcons} name="expand-more" size={5} ml="auto" color="muted.400" />
+                  <Icon
+                    as={MaterialIcons}
+                    name="expand-more"
+                    size={5}
+                    ml="auto"
+                    color="muted.400"
+                  />
                 </HStack>
               </Pressable>
               {showDatePicker && (
                 <DateTimePicker
                   value={values.date ? new Date(values.date) : new Date()}
                   mode="date"
-                  display="default"
-                  onChange={(_, selectedDate) => {
-                    setShowDatePicker(false);
-                    if (selectedDate) setFieldValue('date', selectedDate.toISOString());
+                  display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                  onChange={(event, selectedDate) => {
+                    if (Platform.OS !== 'ios') setShowDatePicker(false);
+                    if (selectedDate) {
+                      const iso = selectedDate.toISOString().split('T')[0];
+                      setFieldValue('date', iso);
+                    }
                   }}
                 />
               )}
               <FormControl.ErrorMessage>{errors.date}</FormControl.ErrorMessage>
             </FormControl>
+
             <FormControl>
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 Ubicación del anuncio (opcional)
@@ -147,33 +200,7 @@ export function CreateAnnouncementScreen() {
                 borderRadius={8}
               />
             </FormControl>
-            <FormControl>
-              <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
-                Adjunta una imagen o video informativo
-                <Text fontWeight="400" color="muted.500"> (Opcional, pero recomendado)</Text>
-              </FormControl.Label>
-              <Pressable onPress={() => handlePickImage(setFieldValue)}>
-                <Box
-                  bg="muted.100"
-                  borderRadius={12}
-                  alignItems="center"
-                  justifyContent="center"
-                  py={6}
-                  mt={1}
-                >
-                  {image ? (
-                    <Text fontFamily="Geist" color="muted.700">Imagen seleccionada</Text>
-                  ) : (
-                    <VStack alignItems="center" space={2}>
-                      <Icon as={MaterialIcons} name="image" size={8} color="muted.400" />
-                      <Text fontFamily="Geist" color="teal.700" fontWeight="500">
-                        Importar desde galería
-                      </Text>
-                    </VStack>
-                  )}
-                </Box>
-              </Pressable>
-            </FormControl>
+
             <Button
               mt={6}
               w="100%"
