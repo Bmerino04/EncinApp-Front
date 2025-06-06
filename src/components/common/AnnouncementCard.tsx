@@ -23,21 +23,30 @@ export function AnnouncementCard({ announcement, onPress }: AnnouncementCardProp
       <Text fontFamily="Geist" fontWeight="700" fontSize="md" mb={1}>
         {announcement.titulo}
       </Text>
-      <Image
-        source={{ uri: announcement.imagenUrl }}
-        alt={announcement.titulo}
-        borderRadius={16}
-        w="100%"
-        h={180}
-        resizeMode="cover"
-        mb={2}
-      />
+
+      <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.800">
+        {announcement.cuerpo}
+      </Text>
+
+      {announcement.imagenUrl !== '' && (
+        <Image
+          source={{ uri: announcement.imagenUrl }}
+          alt={announcement.titulo}
+          borderRadius={16}
+          w="100%"
+          h={180}
+          resizeMode="cover"
+          mb={2}
+        />
+      )}
+
       <HStack alignItems="center" space={1} mb={1}>
         <Icon as={MaterialIcons} name="location-on" size={4} color="muted.500" />
         <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700">
           {announcement.direccionAnuncio}
         </Text>
       </HStack>
+
       <HStack alignItems="center" space={1}>
         <Icon as={MaterialIcons} name="event" size={4} color="muted.500" />
         <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700">
@@ -64,8 +73,17 @@ export function AnnouncementCard({ announcement, onPress }: AnnouncementCardProp
   );
 }
 
+// Formatea fecha y hora desde `fecha_relacionada`
 function formatDateTime(dateString: string) {
-  // Example: 2025-05-10T14:00:00
   const date = new Date(dateString);
-  return `${date.toLocaleDateString()} - ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} hrs`;
+  const options: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  };
+
+  return date.toLocaleDateString('es-CL', options).replace(',', ' -') + ' hrs';
 } 
