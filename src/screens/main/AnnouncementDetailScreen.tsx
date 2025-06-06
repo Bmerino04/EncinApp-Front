@@ -1,36 +1,112 @@
-import React, { useState } from 'react';
-import { Box, Text, IconButton, Icon, StatusBar, VStack, HStack, Image } from 'native-base';
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  Box,
+  Text,
+  IconButton,
+  Icon,
+  StatusBar,
+  VStack,
+  HStack,
+  Image,
+  Spinner,
+  Center,
+  useToast,
+} from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
 import { MainStackParamList } from 'src/navigation/types';
 import { ConfirmDeleteModal } from 'src/components/common/ConfirmDeleteModal';
-
-const mockAnnouncements = [
-  {
-    id: 1,
-    titulo: '¡Operativo de Esterilización Gratuito! 🐶🐱',
-    cuerpo:
-      'Ven con tu mascota el 10 de Mayo del 2025 desde las 14.00 hrs hasta las 18.00 hrs a Av. Las Encinas 0472.\nAtención gratuita, incluye esterilización, desparasitación y chip.',
-    imagenUrl: 'https://www.unc.edu.pe/wp-content/uploads/2023/06/campana-de-esterilizacion.jpg',
-    direccionAnuncio: 'Av. Encinas 0472',
-    fechaAsociada: '2025-05-10T14:00:00',
-    fechaPublicacion: '2025-04-20T10:00:00',
-  },
-];
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from 'src/api/axios';
 
 type AnnouncementDetailRouteProp = RouteProp<MainStackParamList, 'AnnouncementDetail'>;
+
+interface AnuncioApi {
+  id_anuncio: number;
+  titulo: string;
+  cuerpo: string;
+  multimedia_url: string | null;
+  tipo_multimedia: string | null;
+  fecha_relacionada: string;
+  direccion: string;
+  fecha_emision: string;
+  id_usuario: number | null;
+}
 
 export function AnnouncementDetailScreen() {
   const navigation = useNavigation();
   const route = useRoute<AnnouncementDetailRouteProp>();
   const { id } = route.params;
-  const announcement = mockAnnouncements.find(a => a.id === Number(id));
+
+  const toast = useToast();
+  const [announcement, setAnnouncement] = useState<AnuncioApi | null>(null);
+  const [loading, setLoading] = useState(true);
   const [showDelete, setShowDelete] = useState(false);
+
+  const fetchAnnouncement = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const response = await api.get(`/anuncios/${id}`, {
+        headers: {
+          Authorization: token || '',
+        },
+      });
+      setAnnouncement(response.data.anuncioEncontrado);
+    } catch (error) {
+      console.error('Error fetching announcement:', error);
+      setAnnouncement(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  const handleDelete = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) throw new Error('Token no encontrado');
+
+      await api.delete(`/anuncios/${id}`, {
+        headers: { Authorization: token },
+      });
+
+      toast.show({
+        description: 'Anuncio eliminado correctamente',
+        placement: 'top',
+      });
+
+      setShowDelete(false);
+      navigation.goBack();
+    } catch (error: any) {
+      console.error('Error al eliminar anuncio:', error.response?.data || error.message);
+      toast.show({
+        description: 'No se pudo eliminar el anuncio',
+        placement: 'top',
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchAnnouncement();
+
+    const unsubscribe = navigation.addListener('focus', fetchAnnouncement);
+    return unsubscribe;
+  }, [fetchAnnouncement, navigation]);
+
+  if (loading) {
+    return (
+      <Box flex={1} bg="#f5f6fa">
+        <Center flex={1}>
+          <Spinner size="lg" />
+        </Center>
+      </Box>
+    );
+  }
 
   if (!announcement) {
     return (
-      <Box flex={1} alignItems="center" justifyContent="center">
+      <Box flex={1} alignItems="center" justifyContent="center" bg="#f5f6fa">
         <Text>No se encontró el anuncio.</Text>
       </Box>
     );
@@ -81,34 +157,36 @@ export function AnnouncementDetailScreen() {
           <Text fontFamily="Geist" fontWeight="700" fontSize="md" mb={1}>
             {announcement.titulo}
           </Text>
-          <Image
-            source={{ uri: announcement.imagenUrl }}
-            alt={announcement.titulo}
-            borderRadius={16}
-            w="100%"
-            h={180}
-            resizeMode="cover"
-            mb={2}
-          />
+          {announcement.multimedia_url && (
+            <Image
+              source={{ uri: announcement.multimedia_url }}
+              alt={announcement.titulo}
+              borderRadius={16}
+              w="100%"
+              h={180}
+              resizeMode="cover"
+              mb={2}
+            />
+          )}
           <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.800" mb={2}>
             {announcement.cuerpo}
           </Text>
           <HStack alignItems="center" space={1} mb={1}>
             <Icon as={MaterialIcons} name="location-on" size={4} color="muted.500" />
             <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700">
-              {announcement.direccionAnuncio}
+              {announcement.direccion}
             </Text>
           </HStack>
           <HStack alignItems="center" space={1} mb={1}>
             <Icon as={MaterialIcons} name="event" size={4} color="muted.500" />
             <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700">
-              {formatDate(announcement.fechaAsociada)}
+              {formatDate(announcement.fecha_relacionada)}
             </Text>
           </HStack>
           <HStack alignItems="center" space={1}>
             <Icon as={MaterialIcons} name="schedule" size={4} color="muted.500" />
             <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700">
-              {formatTime(announcement.fechaAsociada)}
+              {formatTime(announcement.fecha_relacionada)}
             </Text>
           </HStack>
         </VStack>
@@ -116,7 +194,7 @@ export function AnnouncementDetailScreen() {
       <ConfirmDeleteModal
         isOpen={showDelete}
         onCancel={() => setShowDelete(false)}
-        onConfirm={() => setShowDelete(false)}
+        onConfirm={handleDelete}
       />
     </Box>
   );
