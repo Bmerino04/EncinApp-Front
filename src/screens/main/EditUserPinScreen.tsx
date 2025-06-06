@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
-import { Box, Button, FormControl, Input, Text, VStack, IconButton, Icon, StatusBar } from 'native-base';
+import {
+  Box,
+  Button,
+  FormControl,
+  Input,
+  Text,
+  VStack,
+  IconButton,
+  Icon,
+  StatusBar,
+  useToast,
+} from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MainStackParamList } from 'src/navigation/types';
+import { api } from 'src/api/axios';
 
 type EditUserPinRoute = RouteProp<MainStackParamList, 'EditUserPin'>;
 
 const PinSchema = Yup.object().shape({
-  currentPin: Yup.string().required('El pin actual es requerido'),
   newPin: Yup.string().required('El nuevo pin es requerido').min(4, 'Mínimo 4 dígitos'),
   repeatPin: Yup.string()
     .oneOf([Yup.ref('newPin')], 'Los pines no coinciden')
@@ -19,17 +31,29 @@ const PinSchema = Yup.object().shape({
 
 export function EditUserPinScreen() {
   const navigation = useNavigation();
+  const toast = useToast();
   const route = useRoute<EditUserPinRoute>();
   const { id } = route.params;
-  const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showRepeat, setShowRepeat] = useState(false);
 
-  const handleSave = () => {
-    // Mock save logic
-    setTimeout(() => {
+  const handleSave = async (values: { newPin: string }) => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        toast.show({ description: 'Token no encontrado, por favor inicia sesión' });
+        return;
+      }
+      const body = { pin: values.newPin };
+      await api.patch(`/usuarios/${id}`, body, {
+        headers: { Authorization: token },
+      });
+      toast.show({ description: 'Pin actualizado correctamente' });
       navigation.goBack();
-    }, 500);
+    } catch (error) {
+      console.error(error);
+      toast.show({ description: 'Error actualizando pin' });
+    }
   };
 
   return (
@@ -63,41 +87,16 @@ export function EditUserPinScreen() {
           textAlign="center"
           mr={7}
         >
-          Cambiar contraseña
+          Cambiar pin
         </Text>
       </Box>
       <Formik
-        initialValues={{ currentPin: '', newPin: '', repeatPin: '' }}
+        initialValues={{ newPin: '', repeatPin: '' }}
         validationSchema={PinSchema}
-        onSubmit={handleSave}
+        onSubmit={(values) => handleSave({ newPin: values.newPin })}
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
           <VStack space={4} px={6} mt={2}>
-            <FormControl isInvalid={!!(touched.currentPin && errors.currentPin)}>
-              <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
-                Pin actual
-              </FormControl.Label>
-              <Input
-                placeholder="****"
-                fontFamily="Geist"
-                value={values.currentPin}
-                onChangeText={handleChange('currentPin')}
-                onBlur={handleBlur('currentPin')}
-                type={showCurrent ? 'text' : 'password'}
-                bg="white"
-                borderRadius={8}
-                InputRightElement={
-                  <Icon
-                    as={<MaterialIcons name={showCurrent ? 'visibility' : 'visibility-off'} />}
-                    size={5}
-                    mr="2"
-                    color="muted.400"
-                    onPress={() => setShowCurrent(!showCurrent)}
-                  />
-                }
-              />
-              <FormControl.ErrorMessage>{errors.currentPin}</FormControl.ErrorMessage>
-            </FormControl>
             <FormControl isInvalid={!!(touched.newPin && errors.newPin)}>
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 Nuevo Pin
@@ -123,6 +122,7 @@ export function EditUserPinScreen() {
               />
               <FormControl.ErrorMessage>{errors.newPin}</FormControl.ErrorMessage>
             </FormControl>
+
             <FormControl isInvalid={!!(touched.repeatPin && errors.repeatPin)}>
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 Repetir nuevo Pin
@@ -148,6 +148,7 @@ export function EditUserPinScreen() {
               />
               <FormControl.ErrorMessage>{errors.repeatPin}</FormControl.ErrorMessage>
             </FormControl>
+
             <Button
               mt={4}
               w="100%"
@@ -163,4 +164,4 @@ export function EditUserPinScreen() {
       </Formik>
     </Box>
   );
-} 
+}
