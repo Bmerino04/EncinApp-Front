@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   Box,
   Text,
@@ -11,6 +11,8 @@ import {
   Switch,
   HStack,
   Spinner,
+  useToast,
+  Center,
 } from 'native-base';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -19,7 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from 'src/api/axios';
 import { jwtDecode } from 'jwt-decode';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from 'src/navigation/types';
+import { MainStackParamList } from 'src/navigation/types';
 
 interface UsuarioApi {
   id_usuario: number;
@@ -31,45 +33,78 @@ interface UsuarioApi {
   direccion: string;
 }
 
+type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'PersonalInfo'>;
+
 export function PersonalInfoScreen() {
-  // Ahora tipamos navigation con RootStackParamList para que "Auth" sea válido en reset()
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NavigationProp>();
   const [usuario, setUsuario] = useState<UsuarioApi | null>(null);
   const [loading, setLoading] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
+  const toast = useToast();
 
-  useEffect(() => {
-    const fetchUsuario = async () => {
-      try {
-        const token = await AsyncStorage.getItem('userToken');
-        if (!token) {
-          console.error('Token no encontrado');
-          return;
-        }
+  const fetchUsuario = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) throw new Error('Token no encontrado');
 
-        // Decodificar token para obtener el id_usuario
-        const decoded: any = jwtDecode(token);
-        const id_usuario = decoded.id_usuario;
+      const decoded: any = jwtDecode(token);
+      const id_usuario = decoded.id;
 
-        const response = await api.get(`/usuarios/${id_usuario}`, {
-          headers: { Authorization: token },
-        });
+      const response = await api.get(`usuarios/${id_usuario}`, {
+        headers: { Authorization: token },
+      });
 
-        setUsuario(response.data.usuarioEncontrado);
-      } catch (error) {
-        console.error('Error al obtener datos del usuario:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsuario();
+      setUsuario(response.data.usuarioEncontrado);
+    } catch (error) {
+      console.error('Error al obtener datos del usuario:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const toggleDisponibilidad = () => {
-    if (usuario) {
-      setUsuario({ ...usuario, disponibilidad: !usuario.disponibilidad });
-      // Aquí puedes hacer un PUT a /usuarios/{id} para persistir el cambio si es necesario
+  useEffect(() => {
+    fetchUsuario();
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchUsuario();
+    });
+
+    return unsubscribe;
+  }, [fetchUsuario, navigation]);
+
+  const toggleDisponibilidad = async () => {
+    if (!usuario || isToggling) return;
+
+    setIsToggling(true);
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) throw new Error('Token no encontrado');
+
+      const nuevaDisponibilidad = !usuario.disponibilidad;
+
+      const response = await api.patch(
+        `/usuarios/${usuario.id_usuario}/disponibilidad`,
+        { disponibilidad: nuevaDisponibilidad },
+        { headers: { Authorization: token } }
+      );
+
+      if (response.status === 200) {
+        setUsuario({ ...usuario, disponibilidad: nuevaDisponibilidad });
+        toast.show({
+          description: 'Disponibilidad actualizada',
+          placement: 'top',
+        });
+      }
+    } catch (error) {
+      console.error('Error al actualizar disponibilidad:', error);
+      toast.show({
+        description: 'Error al actualizar disponibilidad',
+        placement: 'top',
+      });
+    } finally {
+      setIsToggling(false);
     }
   };
 
@@ -115,6 +150,7 @@ export function PersonalInfoScreen() {
           Información Personal
         </Text>
       </Box>
+
       <VStack alignItems="center" space={1} mb={8}>
         <Text fontFamily="Geist" fontWeight="600" fontSize="lg" mt={2}>
           {usuario.nombre}
@@ -126,6 +162,7 @@ export function PersonalInfoScreen() {
           {usuario.direccion}
         </Text>
       </VStack>
+
       <Box bg="white" borderRadius={20} shadow={2} mx={3}>
         <VStack divider={<Divider />}>
           <HStack alignItems="center" justifyContent="space-between" px={5} py={4}>
@@ -134,32 +171,72 @@ export function PersonalInfoScreen() {
             </Text>
             <Switch
               isChecked={usuario.disponibilidad}
+              isDisabled={isToggling}
               onToggle={toggleDisponibilidad}
               offTrackColor="muted.300"
               onTrackColor="primary.400"
             />
           </HStack>
-          <Pressable>
+
+          <Pressable
+            onPress={() =>
+              navigation.navigate('EditUserName', {
+                id: String(usuario.id_usuario),
+                value: usuario.nombre,
+              })
+            }
+          >
             <Box px={5} py={4}>
               <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cambiar nombre de usuario
+                Cambiar Nombre
               </Text>
             </Box>
           </Pressable>
-          <Pressable>
+
+          <Pressable
+            onPress={() =>
+              navigation.navigate('EditUserAddress', {
+                id: String(usuario.id_usuario),
+                value: usuario.direccion,
+              })
+            }
+          >
             <Box px={5} py={4}>
               <Text fontFamily="Geist" fontWeight="400" fontSize="md">
                 Cambiar Dirección
               </Text>
             </Box>
           </Pressable>
-          <Pressable>
+
+          <Pressable
+            onPress={() =>
+              navigation.navigate('EditUserRut', {
+                id: String(usuario.id_usuario),
+                value: usuario.rut,
+              })
+            }
+          >
             <Box px={5} py={4}>
               <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cambiar pin
+                Cambiar Rut
               </Text>
             </Box>
           </Pressable>
+
+          <Pressable
+            onPress={() =>
+              navigation.navigate('EditUserPin', {
+                id: String(usuario.id_usuario),
+              })
+            }
+          >
+            <Box px={5} py={4}>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
+                Cambiar Pin
+              </Text>
+            </Box>
+          </Pressable>
+
           <Pressable onPress={() => setShowLogoutModal(true)}>
             <Box px={5} py={4}>
               <Text fontFamily="Geist" fontWeight="400" fontSize="md">
@@ -169,12 +246,13 @@ export function PersonalInfoScreen() {
           </Pressable>
         </VStack>
       </Box>
+
       <LogoutConfirmModal
         isOpen={showLogoutModal}
         onCancel={() => setShowLogoutModal(false)}
         onConfirm={() => {
           setShowLogoutModal(false);
-          navigation.reset({ index: 0, routes: [{ name: 'Auth' }] });
+          // navigation.reset({ index: 0, routes: [{ name: 'Auth' }] });
         }}
       />
     </Box>
