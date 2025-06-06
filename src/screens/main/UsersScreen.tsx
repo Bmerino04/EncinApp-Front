@@ -1,24 +1,68 @@
-import React from 'react';
-import { Box, Text, IconButton, Icon, StatusBar } from 'native-base';
+import React, { useEffect, useState } from 'react';
+import { Box, Text, IconButton, Icon, StatusBar, Spinner } from 'native-base';
 import { FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { UserListItem, User } from 'src/components/common/UserListItem';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from 'src/navigation/types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from 'src/api/axios';
 
-const mockUsers: User[] = [
-  { id: 1, nombre: 'Bernardino Jara', rut: '', direccion: '', pin: '', disponibilidad: false, permisos: [] },
-  { id: 2, nombre: 'José Soto', rut: '', direccion: '', pin: '', disponibilidad: true, permisos: [] },
-  { id: 3, nombre: 'Felipe Jorquera', rut: '', direccion: '', pin: '', disponibilidad: false, permisos: [] },
-  { id: 4, nombre: 'Juan Pablo Uribe', rut: '', direccion: '', pin: '', disponibilidad: true, permisos: [] },
-  { id: 5, nombre: 'Aurora Ganga', rut: '', direccion: '', pin: '', disponibilidad: true, permisos: [] },
-  { id: 6, nombre: 'Melisa Sandoval', rut: '', direccion: '', pin: '', disponibilidad: true, permisos: [] },
-  { id: 7, nombre: 'Cristobal Sepulveda', rut: '', direccion: '', pin: '', disponibilidad: false, permisos: [] },
-];
+interface UsuarioApi {
+  id_usuario: number;
+  nombre: string;
+  rut: string;
+  pin: string;
+  es_presidente: boolean;
+  disponibilidad: boolean;
+  direccion: string;
+}
 
 export function UsersScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+  const [usuarios, setUsuarios] = useState<UsuarioApi[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUsuarios = async () => {
+      try {
+        const token = await AsyncStorage.getItem('userToken');
+        if (!token) {
+          console.log('No token found');
+          setLoading(false);
+          return;
+        }
+        const response = await api.get('/usuarios', {
+          headers: {
+            Authorization: token,
+          },
+        });
+        setUsuarios(response.data.usuariosEncontrados);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsuarios();
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      setLoading(true); 
+      fetchUsuarios();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
+
+
+  if (loading) {
+    return (
+      <Box flex={1} justifyContent="center" alignItems="center">
+        <Spinner size="lg" />
+      </Box>
+    );
+  }
 
   return (
     <Box flex={1} bg="#f5f6fa">
@@ -61,14 +105,25 @@ export function UsersScreen() {
         />
       </Box>
       <FlatList
-        data={mockUsers}
-        keyExtractor={item => item.id.toString()}
+        data={usuarios}
+        keyExtractor={(item) => item.id_usuario.toString()}
         renderItem={({ item }) => (
-          <UserListItem user={item} onPress={() => navigation.navigate('UserDetail', { id: String(item.id) })} />
+          <UserListItem
+            user={{
+              id: item.id_usuario,
+              nombre: item.nombre,
+              rut: item.rut,
+              direccion: item.direccion,
+              pin: item.pin,
+              disponibilidad: item.disponibilidad,
+              permisos: [], 
+            }}
+            onPress={() => navigation.navigate('UserDetail', { id: String(item.id_usuario) })}
+          />
         )}
         contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 16 }}
         showsVerticalScrollIndicator={false}
       />
     </Box>
   );
-} 
+}
