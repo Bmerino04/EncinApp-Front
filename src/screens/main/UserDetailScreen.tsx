@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Text, IconButton, Icon, StatusBar, VStack, Divider, Pressable } from 'native-base';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Box, Text, IconButton, Icon, StatusBar, VStack, Divider, Pressable, Spinner, Center } from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
@@ -8,33 +8,92 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ManagePermissionsModal } from 'src/components/common/ManagePermissionsModal';
 import { TransferPresidencyModal } from 'src/components/common/TransferPresidencyModal';
 import { DeleteUserModal } from 'src/components/common/DeleteUserModal';
-
-const mockUsers = [
-  { id: 1, nombre: 'Bernardino Jara', rut: '12.345.677-9', direccion: 'Santa Carolina 125', pin: '', disponibilidad: false, permisos: [], esPresidente: false },
-  { id: 2, nombre: 'José Soto', rut: '11.222.333-4', direccion: 'Av. Encinas 0472', pin: '', disponibilidad: true, permisos: [], esPresidente: true },
-];
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from 'src/api/axios';
 
 type UserDetailRouteProp = RouteProp<MainStackParamList, 'UserDetail'>;
+
+interface UsuarioApi {
+  id_usuario: number;
+  nombre: string;
+  rut: string;
+  pin: string;
+  es_presidente: boolean;
+  disponibilidad: boolean;
+  direccion: string;
+}
 
 export function UserDetailScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const route = useRoute<UserDetailRouteProp>();
   const { id } = route.params;
-  const user = mockUsers.find(u => u.id === Number(id));
 
-  if (!user) {
+  const [user, setUser] = useState<UsuarioApi | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [showPermModal, setShowPermModal] = useState(false);
+  const [permisos, setPermisos] = useState<string[]>([]);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [esPresidente, setEsPresidente] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  const fetchUsuario = useCallback(async () => {
+    setLoading(true);
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        console.log('No token found');
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      const response = await api.get(`/usuarios/${id}`, {
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      const datos: UsuarioApi = response.data.usuarioEncontrado;
+      setUser(datos);
+      setPermisos([]); 
+      setEsPresidente(datos.es_presidente);
+    } catch (error) {
+      console.error('Error fetching user detail:', error);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchUsuario();
+
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchUsuario();
+    });
+
+    return unsubscribe;
+  }, [fetchUsuario, navigation]);
+
+  if (loading) {
     return (
-      <Box flex={1} alignItems="center" justifyContent="center">
-        <Text>No se encontró el usuario.</Text>
+      <Box flex={1} bg="#f5f6fa">
+        <Center flex={1}>
+          <Spinner size="lg" />
+        </Center>
       </Box>
     );
   }
 
-  const [showPermModal, setShowPermModal] = useState(false);
-  const [permisos, setPermisos] = useState<string[]>(user.permisos || []);
-  const [showTransferModal, setShowTransferModal] = useState(false);
-  const [esPresidente, setEsPresidente] = useState(user.esPresidente || false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  if (!user) {
+    return (
+      <Box flex={1} alignItems="center" justifyContent="center" bg="#f5f6fa">
+        <Text fontFamily="Geist" fontSize="md" color="muted.500">
+          No se encontró el usuario.
+        </Text>
+      </Box>
+    );
+  }
 
   return (
     <Box flex={1} bg="#f5f6fa">
@@ -70,6 +129,8 @@ export function UserDetailScreen() {
           Vecino
         </Text>
       </Box>
+
+      {/* Datos del Usuario */}
       <VStack alignItems="center" space={1} mb={8}>
         <Text fontFamily="Geist" fontWeight="600" fontSize="lg" mt={2}>
           {user.nombre}
@@ -81,52 +142,119 @@ export function UserDetailScreen() {
           {user.direccion}
         </Text>
         <Text fontFamily="Geist" fontWeight="400" fontSize="md" color="muted.400">
-          {/* Device field blank for now */}
+          {user.disponibilidad ? 'Disponible' : 'No disponible'}
         </Text>
       </VStack>
+
+      {/* Opciones de acción */}
       <Box bg="white" borderRadius={20} shadow={2} mx={3}>
         <VStack divider={<Divider />}>
-          <Pressable onPress={() => navigation.navigate('EditUserName', { id: String(user.id), value: user.nombre })}>
-            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Nombre</Text></Box>
+          <Pressable
+            onPress={() =>
+              navigation.navigate('EditUserName', {
+                id: String(user.id_usuario),
+                value: user.nombre,
+              })
+            }
+          >
+            <Box px={5} py={4}>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
+                Cambiar Nombre
+              </Text>
+            </Box>
           </Pressable>
-          <Pressable onPress={() => navigation.navigate('EditUserAddress', { id: String(user.id), value: user.direccion })}>
-            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Dirección</Text></Box>
+
+          <Pressable
+            onPress={() =>
+              navigation.navigate('EditUserAddress', {
+                id: String(user.id_usuario),
+                value: user.direccion,
+              })
+            }
+          >
+            <Box px={5} py={4}>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
+                Cambiar Dirección
+              </Text>
+            </Box>
           </Pressable>
-          <Pressable onPress={() => navigation.navigate('EditUserPin', { id: String(user.id) })}>
-            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Pin</Text></Box>
+
+          <Pressable
+            onPress={() =>
+              navigation.navigate('EditUserPin', {
+                id: String(user.id_usuario),
+              })
+            }
+          >
+            <Box px={5} py={4}>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
+                Cambiar Pin
+              </Text>
+            </Box>
           </Pressable>
-          <Pressable onPress={() => navigation.navigate('EditUserRut', { id: String(user.id), value: user.rut })}>
-            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Rut</Text></Box>
+
+          <Pressable
+            onPress={() =>
+              navigation.navigate('EditUserRut', {
+                id: String(user.id_usuario),
+                value: user.rut,
+              })
+            }
+          >
+            <Box px={5} py={4}>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
+                Cambiar Rut
+              </Text>
+            </Box>
           </Pressable>
+
           <Pressable onPress={() => setShowPermModal(true)}>
-            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Gestionar Permisos</Text></Box>
+            <Box px={5} py={4}>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
+                Gestionar Permisos
+              </Text>
+            </Box>
           </Pressable>
+
           <Pressable onPress={() => setShowTransferModal(true)}>
-            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Transferir Presidencia</Text></Box>
+            <Box px={5} py={4}>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
+                Transferir Presidencia
+              </Text>
+            </Box>
           </Pressable>
+
           <Pressable onPress={() => setShowDeleteModal(true)}>
-            <Box px={5} py={4}><Text fontFamily="Geist" fontWeight="400" fontSize="md">Eliminar Cuenta</Text></Box>
+            <Box px={5} py={4}>
+              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
+                Eliminar Cuenta
+              </Text>
+            </Box>
           </Pressable>
         </VStack>
       </Box>
+
+      {/* Modales de acción */}
       <ManagePermissionsModal
         isOpen={showPermModal}
         onClose={() => setShowPermModal(false)}
         currentPermissions={permisos}
-        onSave={perms => {
+        onSave={(perms) => {
           setPermisos(perms);
           setShowPermModal(false);
         }}
       />
+
       <TransferPresidencyModal
         isOpen={showTransferModal}
         onCancel={() => setShowTransferModal(false)}
         onConfirm={() => {
-          setEsPresidente(false); // This user loses presidency
+          setEsPresidente(false);
           setShowTransferModal(false);
         }}
         userName={user.nombre}
       />
+
       <DeleteUserModal
         isOpen={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
@@ -137,4 +265,4 @@ export function UserDetailScreen() {
       />
     </Box>
   );
-} 
+}
