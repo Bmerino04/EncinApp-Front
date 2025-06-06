@@ -7,6 +7,11 @@ import { useEffect, useState } from 'react';
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
 
   useEffect(() => {
     (async () => {
@@ -27,8 +32,8 @@ export default function App() {
   return (
     <NativeBaseProvider theme={theme}>
       <NavigationContainer>
-        <RootNavigator />
+        <RootNavigator isAuthenticated={isAuthenticated} onLogin={handleLogin} />
       </NavigationContainer>
     </NativeBaseProvider>
   );
-} 
+}
