@@ -1,3 +1,4 @@
+import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackParamList } from './types';
 import { AnnouncementsScreen } from 'src/screens/main/AnnouncementsScreen';
@@ -13,7 +14,11 @@ import { CreateAnnouncementScreen } from '../screens/main/CreateAnnouncementScre
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
-export function MainStack() {
+interface MainStackProps {
+  onLogout: () => void;  // <-- recibe onLogout
+}
+
+export function MainStack({ onLogout }: MainStackProps) {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -23,7 +28,9 @@ export function MainStack() {
       <Stack.Screen name="Home" component={MainNavigationScreen} />
       <Stack.Screen name="Announcements" component={AnnouncementsScreen} />
       <Stack.Screen name="Users" component={UsersScreen} />
-      <Stack.Screen name="PersonalInfo" component={PersonalInfoScreen} />
+      <Stack.Screen name="PersonalInfo">
+        {(props) => <PersonalInfoScreen {...props} onLogout={onLogout} />}
+      </Stack.Screen>
       <Stack.Screen name="AnnouncementDetail" component={AnnouncementDetailScreen} />
       <Stack.Screen name="UserDetail" component={UserDetailScreen} />
       <Stack.Screen name="UserRegister" component={UserRegisterScreen} />
@@ -35,4 +42,4 @@ export function MainStack() {
       {/* <Stack.Screen name="EditUser" component={EditUserScreen} /> */}
     </Stack.Navigator>
   );
-} 
+}
