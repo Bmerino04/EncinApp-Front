@@ -13,6 +13,10 @@ export default function App() {
     setIsAuthenticated(true);
   };
 
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+  };
+
   useEffect(() => {
     (async () => {
       await Font.loadAsync({
@@ -32,7 +36,11 @@ export default function App() {
   return (
     <NativeBaseProvider theme={theme}>
       <NavigationContainer>
-        <RootNavigator isAuthenticated={isAuthenticated} onLogin={handleLogin} />
+        <RootNavigator
+          isAuthenticated={isAuthenticated}
+          onLogin={handleLogin}
+          onLogout={handleLogout} 
+        />
       </NavigationContainer>
     </NativeBaseProvider>
   );
