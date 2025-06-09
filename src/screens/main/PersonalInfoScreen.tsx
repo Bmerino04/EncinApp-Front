@@ -35,7 +35,11 @@ interface UsuarioApi {
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'PersonalInfo'>;
 
-export function PersonalInfoScreen() {
+interface PersonalInfoScreenProps {
+  onLogout: () => void;  // <-- nueva prop
+}
+
+export function PersonalInfoScreen({ onLogout }: PersonalInfoScreenProps) {
   const navigation = useNavigation<NavigationProp>();
   const [usuario, setUsuario] = useState<UsuarioApi | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,6 +109,20 @@ export function PersonalInfoScreen() {
       });
     } finally {
       setIsToggling(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('userToken');
+      onLogout(); // Actualiza estado global de autenticación
+      // navigation.reset({ index: 0, routes: [{ name: 'Auth' }] }); // No necesario porque el cambio de estado cambia la navegación
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      toast.show({
+        description: 'Error al cerrar sesión',
+        placement: 'top',
+      });
     }
   };
 
@@ -252,7 +270,7 @@ export function PersonalInfoScreen() {
         onCancel={() => setShowLogoutModal(false)}
         onConfirm={() => {
           setShowLogoutModal(false);
-          // navigation.reset({ index: 0, routes: [{ name: 'Auth' }] });
+          handleLogout();
         }}
       />
     </Box>
