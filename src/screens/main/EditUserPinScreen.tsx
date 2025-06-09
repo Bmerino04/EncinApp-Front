@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   FormControl,
-  Input,
   Text,
   VStack,
   IconButton,
@@ -19,6 +18,7 @@ import { RouteProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MainStackParamList } from 'src/navigation/types';
 import { api } from 'src/api/axios';
+import { TextInput } from 'react-native';
 
 type EditUserPinRoute = RouteProp<MainStackParamList, 'EditUserPin'>;
 
@@ -101,24 +101,18 @@ export function EditUserPinScreen() {
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 Nuevo Pin
               </FormControl.Label>
-              <Input
+              <TextInput
                 placeholder="****"
-                fontFamily="Geist"
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: 8,
+                  padding: 12,
+                  fontFamily: 'Geist',
+                }}
                 value={values.newPin}
                 onChangeText={handleChange('newPin')}
                 onBlur={handleBlur('newPin')}
-                type={showNew ? 'text' : 'password'}
-                bg="white"
-                borderRadius={8}
-                InputRightElement={
-                  <Icon
-                    as={<MaterialIcons name={showNew ? 'visibility' : 'visibility-off'} />}
-                    size={5}
-                    mr="2"
-                    color="muted.400"
-                    onPress={() => setShowNew(!showNew)}
-                  />
-                }
+                secureTextEntry={!showNew}
               />
               <FormControl.ErrorMessage>{errors.newPin}</FormControl.ErrorMessage>
             </FormControl>
@@ -127,24 +121,18 @@ export function EditUserPinScreen() {
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 Repetir nuevo Pin
               </FormControl.Label>
-              <Input
+              <TextInput
                 placeholder="****"
-                fontFamily="Geist"
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: 8,
+                  padding: 12,
+                  fontFamily: 'Geist',
+                }}
                 value={values.repeatPin}
                 onChangeText={handleChange('repeatPin')}
                 onBlur={handleBlur('repeatPin')}
-                type={showRepeat ? 'text' : 'password'}
-                bg="white"
-                borderRadius={8}
-                InputRightElement={
-                  <Icon
-                    as={<MaterialIcons name={showRepeat ? 'visibility' : 'visibility-off'} />}
-                    size={5}
-                    mr="2"
-                    color="muted.400"
-                    onPress={() => setShowRepeat(!showRepeat)}
-                  />
-                }
+                secureTextEntry={!showRepeat}
               />
               <FormControl.ErrorMessage>{errors.repeatPin}</FormControl.ErrorMessage>
             </FormControl>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet } from 'react-native';
+import { Alert, StyleSheet, TextInput } from 'react-native';
 import {
   Box,
   Button,
@@ -7,7 +7,6 @@ import {
   Checkbox,
   FormControl,
   Icon,
-  Input,
   Text,
   VStack,
 } from 'native-base';
@@ -89,36 +88,45 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
               <VStack space={4}>
                 <FormControl isInvalid={!!(touched.rut && errors.rut)}>
                   <FormControl.Label>Rut</FormControl.Label>
-                  <Input
+                  <TextInput
                     placeholder="Ingresa tu rut…"
                     value={values.rut}
                     onChangeText={handleChange('rut')}
                     onBlur={handleBlur('rut')}
                     autoCapitalize="none"
-                    bg="white"
+                    style={{
+                      backgroundColor: 'white',
+                      borderRadius: 8,
+                      padding: 12,
+                      fontFamily: 'Geist',
+                      fontSize: 16,
+                      borderWidth: 1,
+                      borderColor: touched.rut && errors.rut ? '#d20f39' : '#bcc0cc',
+                      marginBottom: 4,
+                    }}
                   />
                   <FormControl.ErrorMessage>{errors.rut}</FormControl.ErrorMessage>
                 </FormControl>
 
                 <FormControl isInvalid={!!(touched.pin && errors.pin)}>
                   <FormControl.Label>Pin</FormControl.Label>
-                  <Input
+                  <TextInput
                     placeholder="Ingresa tu Pin…"
                     value={values.pin}
                     onChangeText={handleChange('pin')}
                     onBlur={handleBlur('pin')}
-                    type={showPin ? 'text' : 'password'}
                     autoCapitalize="none"
-                    bg="white"
-                    InputRightElement={
-                      <Icon
-                        as={<MaterialIcons name={showPin ? 'visibility' : 'visibility-off'} />}
-                        size={5}
-                        mr="2"
-                        color="muted.400"
-                        onPress={() => setShowPin(!showPin)}
-                      />
-                    }
+                    secureTextEntry={!showPin}
+                    style={{
+                      backgroundColor: 'white',
+                      borderRadius: 8,
+                      padding: 12,
+                      fontFamily: 'Geist',
+                      fontSize: 16,
+                      borderWidth: 1,
+                      borderColor: touched.pin && errors.pin ? '#d20f39' : '#bcc0cc',
+                      marginBottom: 4,
+                    }}
                   />
                   <FormControl.ErrorMessage>{errors.pin}</FormControl.ErrorMessage>
                 </FormControl>

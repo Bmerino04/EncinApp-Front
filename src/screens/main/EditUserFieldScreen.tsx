@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, FormControl, Input, Text, VStack, IconButton, Icon, StatusBar, useToast } from 'native-base';
+import { Box, Button, FormControl, Text, VStack, IconButton, Icon, StatusBar, useToast } from 'native-base';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -8,6 +8,7 @@ import { RouteProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MainStackParamList } from 'src/navigation/types';
 import { api } from 'src/api/axios';
+import { TextInput } from 'react-native';
 
 type EditUserFieldRoute =
   | RouteProp<MainStackParamList, 'EditUserName'>
@@ -116,14 +117,17 @@ export function EditUserFieldScreen() {
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 {config.label}
               </FormControl.Label>
-              <Input
+              <TextInput
                 placeholder={config.placeholder}
-                fontFamily="Geist"
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: 8,
+                  padding: 12,
+                  fontFamily: 'Geist',
+                }}
                 value={values.field}
                 onChangeText={handleChange('field')}
                 onBlur={handleBlur('field')}
-                bg="white"
-                borderRadius={8}
               />
               <FormControl.ErrorMessage>{errors.field}</FormControl.ErrorMessage>
             </FormControl>

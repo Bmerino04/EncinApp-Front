@@ -22,6 +22,7 @@ import { api } from 'src/api/axios';
 import { jwtDecode } from 'jwt-decode';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from 'src/navigation/types';
+import { TextInput } from 'react-native';
 
 interface UsuarioApi {
   id_usuario: number;

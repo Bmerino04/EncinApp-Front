@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Alert } from 'react-native';
-import { Box, Button, FormControl, Input, Text, VStack, IconButton, Icon, StatusBar, Spinner, Center } from 'native-base';
+import { Alert, TextInput } from 'react-native';
+import { Box, Button, FormControl, IconButton, Icon, StatusBar, Spinner, Center, VStack, Text } from 'native-base';
 import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -121,14 +121,16 @@ export function UserRegisterScreen() {
                 <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                   Nombre de usuario
                 </FormControl.Label>
-                <Input
+                <TextInput
                   placeholder="Ingresa el nombre de usuario"
-                  fontFamily="Geist"
                   value={values.nombre}
                   onChangeText={handleChange('nombre')}
                   onBlur={handleBlur('nombre')}
-                  bg="white"
-                  borderRadius={8}
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: 8,
+                    padding: 12,
+                  }}
                 />
                 <FormControl.ErrorMessage>{errors.nombre}</FormControl.ErrorMessage>
               </FormControl>
@@ -137,14 +139,16 @@ export function UserRegisterScreen() {
                 <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                   Rut
                 </FormControl.Label>
-                <Input
+                <TextInput
                   placeholder="Ej: 12345678-9"
-                  fontFamily="Geist"
                   value={values.rut}
                   onChangeText={handleChange('rut')}
                   onBlur={handleBlur('rut')}
-                  bg="white"
-                  borderRadius={8}
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: 8,
+                    padding: 12,
+                  }}
                 />
                 <FormControl.ErrorMessage>{errors.rut}</FormControl.ErrorMessage>
               </FormControl>
@@ -153,24 +157,17 @@ export function UserRegisterScreen() {
                 <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                   Pin
                 </FormControl.Label>
-                <Input
+                <TextInput
                   placeholder="Ingresa el pin"
-                  fontFamily="Geist"
                   value={values.pin}
                   onChangeText={handleChange('pin')}
                   onBlur={handleBlur('pin')}
-                  type={showPin ? 'text' : 'password'}
-                  bg="white"
-                  borderRadius={8}
-                  InputRightElement={
-                    <Icon
-                      as={<MaterialIcons name={showPin ? 'visibility' : 'visibility-off'} />}
-                      size={5}
-                      mr="2"
-                      color="muted.400"
-                      onPress={() => setShowPin(!showPin)}
-                    />
-                  }
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: 8,
+                    padding: 12,
+                  }}
+                  secureTextEntry={!showPin}
                 />
                 <FormControl.ErrorMessage>{errors.pin}</FormControl.ErrorMessage>
               </FormControl>
@@ -179,24 +176,17 @@ export function UserRegisterScreen() {
                 <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                   Confirmar Pin
                 </FormControl.Label>
-                <Input
+                <TextInput
                   placeholder="Confirma el pin"
-                  fontFamily="Geist"
                   value={values.confirmPin}
                   onChangeText={handleChange('confirmPin')}
                   onBlur={handleBlur('confirmPin')}
-                  type={showConfirmPin ? 'text' : 'password'}
-                  bg="white"
-                  borderRadius={8}
-                  InputRightElement={
-                    <Icon
-                      as={<MaterialIcons name={showConfirmPin ? 'visibility' : 'visibility-off'} />}
-                      size={5}
-                      mr="2"
-                      color="muted.400"
-                      onPress={() => setShowConfirmPin(!showConfirmPin)}
-                    />
-                  }
+                  style={{
+                    backgroundColor: 'white',
+                    borderRadius: 8,
+                    padding: 12,
+                  }}
+                  secureTextEntry={!showConfirmPin}
                 />
                 <FormControl.ErrorMessage>{errors.confirmPin}</FormControl.ErrorMessage>
               </FormControl>

@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   FormControl,
-  Input,
   Text,
   VStack,
   IconButton,
@@ -24,7 +23,7 @@ import { api } from 'src/api/axios';
 import { jwtDecode } from 'jwt-decode';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from 'src/navigation/types';
-import { Platform } from 'react-native';
+import { Platform, TextInput } from 'react-native';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'CreateAnnouncement'>;
 
@@ -121,14 +120,17 @@ export function CreateAnnouncementScreen() {
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 Título del anuncio
               </FormControl.Label>
-              <Input
+              <TextInput
                 placeholder="Ingrese el título del anuncio"
-                fontFamily="Geist"
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: 8,
+                  padding: 12,
+                  fontFamily: 'Geist',
+                }}
                 value={values.title}
                 onChangeText={handleChange('title')}
                 onBlur={handleBlur('title')}
-                bg="white"
-                borderRadius={8}
               />
               <FormControl.ErrorMessage>{errors.title}</FormControl.ErrorMessage>
             </FormControl>
@@ -137,15 +139,20 @@ export function CreateAnnouncementScreen() {
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 Descripción del anuncio
               </FormControl.Label>
-              <TextArea
+              <TextInput
                 placeholder="Ingrese la descripción del anuncio."
-                fontFamily="Geist"
                 value={values.description}
-                onChangeText={(text) => setFieldValue('description', text)}
+                onChangeText={text => setFieldValue('description', text)}
                 onBlur={handleBlur('description')}
-                bg="white"
-                borderRadius={8}
-                h={20} tvParallaxProperties={undefined} onTextInput={undefined} autoCompleteType={undefined}              />
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: 8,
+                  padding: 12,
+                  fontFamily: 'Geist',
+                }}
+                multiline={true}
+                numberOfLines={4}
+              />
               <FormControl.ErrorMessage>{errors.description}</FormControl.ErrorMessage>
             </FormControl>
 
@@ -190,14 +197,17 @@ export function CreateAnnouncementScreen() {
               <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
                 Ubicación del anuncio (opcional)
               </FormControl.Label>
-              <Input
+              <TextInput
                 placeholder="Ej: Plaza de Armas, Temuco"
-                fontFamily="Geist"
+                style={{
+                  backgroundColor: 'white',
+                  borderRadius: 8,
+                  padding: 12,
+                  fontFamily: 'Geist',
+                }}
                 value={values.location}
                 onChangeText={handleChange('location')}
                 onBlur={handleBlur('location')}
-                bg="white"
-                borderRadius={8}
               />
             </FormControl>
 
