@@ -9,9 +9,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 interface RootNavigatorProps {
   isAuthenticated: boolean;
   onLogin: () => void;
+  onLogout: () => void;
 }
 
-export function RootNavigator({ isAuthenticated, onLogin }: RootNavigatorProps) {
+export function RootNavigator({ isAuthenticated, onLogin, onLogout }: RootNavigatorProps) {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -23,7 +24,9 @@ export function RootNavigator({ isAuthenticated, onLogin }: RootNavigatorProps) 
           {(props) => <AuthStack {...props} onLogin={onLogin} />}
         </Stack.Screen>
       ) : (
-        <Stack.Screen name="Main" component={MainStack} />
+        <Stack.Screen name="Main">
+          {(props) => <MainStack {...props} onLogout={onLogout} />}
+        </Stack.Screen>
       )}
     </Stack.Navigator>
   );
