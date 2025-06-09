@@ -35,18 +35,34 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const [showPin, setShowPin] = useState(false);
 
   const handleLogin = async (values: { rut: string; pin: string; remember: boolean }) => {
+    console.log('[Login] Iniciando sesión con:', values);
+
     try {
+      console.log('[Login] Enviando petición a API…');
       const response = await api.post('/auth/login', {
         rut: values.rut,
         pin: values.pin,
       });
 
+      console.log('[Login] Respuesta recibida:', response.data);
+
       const token = response.data.token;
       await AsyncStorage.setItem('userToken', token);
 
+      console.log('[Login] Token guardado en AsyncStorage');
+
       onLogin();
     } catch (error: any) {
-      console.error('Error en login:', error.response?.data || error.message);
+      console.error('[Login] Error en login:', error);
+
+      if (error.response) {
+        console.error('[Login] Error response:', error.response.data);
+      } else if (error.request) {
+        console.error('[Login] No se recibió respuesta. Detalles del request:', error.request);
+      } else {
+        console.error('[Login] Error al configurar la petición:', error.message);
+      }
+
       if (error.response?.status === 404) {
         Alert.alert('Credenciales incorrectas', 'El rut o pin ingresado es incorrecto.');
       } else {
