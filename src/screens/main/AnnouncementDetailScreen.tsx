@@ -1,17 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  Box,
-  Text,
-  IconButton,
-  Icon,
-  StatusBar,
-  VStack,
-  HStack,
-  Image,
-  Spinner,
-  Center,
-  useToast,
-} from 'native-base';
+import { View, StyleSheet, Image, StatusBar, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Text } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
@@ -39,7 +28,6 @@ export function AnnouncementDetailScreen() {
   const route = useRoute<AnnouncementDetailRouteProp>();
   const { id } = route.params;
 
-  const toast = useToast();
   const [announcement, setAnnouncement] = useState<AnuncioApi | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDelete, setShowDelete] = useState(false);
@@ -71,19 +59,10 @@ export function AnnouncementDetailScreen() {
         headers: { Authorization: token },
       });
 
-      toast.show({
-        description: 'Anuncio eliminado correctamente',
-        placement: 'top',
-      });
-
       setShowDelete(false);
       navigation.goBack();
     } catch (error: any) {
       console.error('Error al eliminar anuncio:', error.response?.data || error.message);
-      toast.show({
-        description: 'No se pudo eliminar el anuncio',
-        placement: 'top',
-      });
     }
   };
 
@@ -96,116 +75,172 @@ export function AnnouncementDetailScreen() {
 
   if (loading) {
     return (
-      <Box flex={1} bg="#f5f6fa">
-        <Center flex={1}>
-          <Spinner size="lg" />
-        </Center>
-      </Box>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+      </View>
     );
   }
 
   if (!announcement) {
     return (
-      <Box flex={1} alignItems="center" justifyContent="center" bg="#f5f6fa">
+      <View style={styles.notFoundContainer}>
         <Text>No se encontró el anuncio.</Text>
-      </Box>
+      </View>
     );
   }
 
   return (
-    <Box flex={1} bg="#f5f6fa">
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Box safeAreaTop bg="#f5f6fa" />
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        bg="white"
-        borderRadius={16}
-        mx={3}
-        mt={3}
-        mb={2}
-        px={2}
-        py={2}
-        shadow={1}
-      >
-        <IconButton
-          icon={<Icon as={MaterialIcons} name="arrow-back-ios" size={5} color="primary" />}
-          borderRadius="full"
-          variant="ghost"
-          onPress={() => navigation.goBack()}
-        />
-        <Text
-          fontFamily="Geist"
-          fontWeight="600"
-          fontSize="lg"
-          color="primary"
-          flex={1}
-          textAlign="center"
-          mr={7}
-        >
-          Anuncio
-        </Text>
-        <IconButton
-          icon={<Icon as={MaterialIcons} name="delete-outline" size={6} color="muted.500" />}
-          borderRadius="full"
-          variant="ghost"
-          onPress={() => setShowDelete(true)}
-        />
-      </Box>
-      <Box bg="white" borderRadius={20} shadow={2} p={3} mx={3} mt={2}>
-        <VStack space={2}>
-          <Text fontFamily="Geist" fontWeight="700" fontSize="md" mb={1}>
-            {announcement.titulo}
-          </Text>
-          {announcement.multimedia_url && (
-            <Image
-              source={{ uri: announcement.multimedia_url }}
-              alt={announcement.titulo}
-              borderRadius={16}
-              w="100%"
-              h={180}
-              resizeMode="cover"
-              mb={2}
-            />
-          )}
-          <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.800" mb={2}>
-            {announcement.cuerpo}
-          </Text>
-          <HStack alignItems="center" space={1} mb={1}>
-            <Icon as={MaterialIcons} name="location-on" size={4} color="muted.500" />
-            <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700">
-              {announcement.direccion}
-            </Text>
-          </HStack>
-          <HStack alignItems="center" space={1} mb={1}>
-            <Icon as={MaterialIcons} name="event" size={4} color="muted.500" />
-            <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700">
-              {formatDate(announcement.fecha_relacionada)}
-            </Text>
-          </HStack>
-          <HStack alignItems="center" space={1}>
-            <Icon as={MaterialIcons} name="schedule" size={4} color="muted.500" />
-            <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700">
-              {formatTime(announcement.fecha_relacionada)}
-            </Text>
-          </HStack>
-        </VStack>
-      </Box>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back-ios" size={20} color="#4f46e5" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Anuncio</Text>
+        <TouchableOpacity onPress={() => setShowDelete(true)} style={styles.deleteButton}>
+          <MaterialIcons name="delete-outline" size={28} color="#6b7280" />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.title}>{announcement.titulo}</Text>
+        {announcement.multimedia_url && (
+          <Image
+            source={{ uri: announcement.multimedia_url }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+        )}
+        <Text style={styles.body}>{announcement.cuerpo}</Text>
+        <View style={styles.row}>
+          <MaterialIcons name="location-on" size={16} color="#6b7280" />
+          <Text style={styles.meta}>{announcement.direccion}</Text>
+        </View>
+        <View style={styles.row}>
+          <MaterialIcons name="event" size={16} color="#6b7280" />
+          <Text style={styles.meta}>{formatDate(announcement.fecha_relacionada)}</Text>
+        </View>
+        <View style={styles.row}>
+          <MaterialIcons name="schedule" size={16} color="#6b7280" />
+          <Text style={styles.meta}>{formatTime(announcement.fecha_relacionada)}</Text>
+        </View>
+      </View>
       <ConfirmDeleteModal
         isOpen={showDelete}
         onCancel={() => setShowDelete(false)}
         onConfirm={handleDelete}
       />
-    </Box>
+    </View>
   );
 }
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
-  return date.toLocaleDateString();
+  return date.toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+  });
 }
 
 function formatTime(dateString: string) {
   const date = new Date(dateString);
-  return `${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} hrs`;
-} 
+  return date.toLocaleTimeString('es-CL', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f6fa',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notFoundContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f6fa',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2.22,
+    elevation: 1,
+  },
+  backButton: {
+    borderRadius: 999,
+    padding: 4,
+  },
+  headerTitle: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 18,
+    color: '#4f46e5',
+    flex: 1,
+    textAlign: 'center',
+    marginRight: 28,
+  },
+  deleteButton: {
+    borderRadius: 999,
+    padding: 4,
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
+    padding: 16,
+    marginHorizontal: 12,
+    marginTop: 8,
+  },
+  title: {
+    fontFamily: 'Geist',
+    fontWeight: '700',
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  image: {
+    borderRadius: 16,
+    width: '100%',
+    height: 180,
+    marginBottom: 8,
+  },
+  body: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#374151',
+    marginBottom: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
+  meta: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#374151',
+  },
+}); 

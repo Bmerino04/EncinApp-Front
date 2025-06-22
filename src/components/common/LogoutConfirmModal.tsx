@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, Button, Text, VStack, HStack } from 'native-base';
+import { Modal, View, StyleSheet } from 'react-native';
+import { Button, Text } from 'react-native-paper';
 
 interface LogoutConfirmModalProps {
   isOpen: boolean;
@@ -9,38 +10,102 @@ interface LogoutConfirmModalProps {
 
 export function LogoutConfirmModal({ isOpen, onCancel, onConfirm }: LogoutConfirmModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onCancel} avoidKeyboard>
-      <Modal.Content borderRadius={16} maxW="90%">
-        <Modal.Body>
-          <VStack space={4} alignItems="center">
-            <Text fontFamily="Geist" fontWeight="700" fontSize="lg" textAlign="center">
+    <Modal
+      visible={isOpen}
+      transparent
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
+      <View style={styles.overlay}>
+        <View style={styles.content}>
+          <View style={styles.body}>
+            <Text style={styles.title}>
               ¿Cerrar sesión?
             </Text>
-            <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700" textAlign="center">
+            <Text style={styles.subtitle}>
               ¿Estás seguro de que quieres cerrar tu sesión?
             </Text>
-            <HStack w="100%" justifyContent="space-between" mt={2}>
+            <View style={styles.buttonContainer}>
               <Button
-                variant="ghost"
-                colorScheme="coolGray"
-                borderRadius={8}
+                mode="text"
                 onPress={onCancel}
-                _text={{ color: 'blue.500', fontFamily: 'Geist', fontWeight: '500' }}
+                style={styles.cancelButton}
+                labelStyle={styles.cancelButtonText}
               >
                 Cancelar
               </Button>
               <Button
-                bg="red.500"
-                borderRadius={8}
+                mode="contained"
                 onPress={onConfirm}
-                _text={{ color: 'white', fontFamily: 'Geist', fontWeight: '600' }}
+                style={styles.logoutButton}
+                labelStyle={styles.logoutButtonText}
               >
                 Cerrar sesión
               </Button>
-            </HStack>
-          </VStack>
-        </Modal.Body>
-      </Modal.Content>
+            </View>
+          </View>
+        </View>
+      </View>
     </Modal>
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    margin: 20,
+    maxWidth: '90%',
+    width: '100%',
+  },
+  body: {
+    padding: 24,
+    alignItems: 'center',
+    gap: 16,
+  },
+  title: {
+    fontFamily: 'Geist',
+    fontWeight: '700',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#374151',
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  cancelButton: {
+    flex: 1,
+    marginRight: 8,
+    borderRadius: 8,
+  },
+  cancelButtonText: {
+    fontFamily: 'Geist',
+    fontWeight: '500',
+    color: '#3b82f6',
+  },
+  logoutButton: {
+    flex: 1,
+    marginLeft: 8,
+    borderRadius: 8,
+    backgroundColor: '#ef4444',
+  },
+  logoutButtonText: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+  },
+}); 

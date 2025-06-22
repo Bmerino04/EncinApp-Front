@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Pressable, Text, VStack, Badge } from 'native-base';
+import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Text, Badge } from 'react-native-paper';
 import { ReactNode } from 'react';
 
 interface NavButtonProps {
@@ -11,37 +12,57 @@ interface NavButtonProps {
 
 export function NavButton({ icon, label, onPress, notificationDot }: NavButtonProps) {
   return (
-    <Pressable onPress={onPress} w={"44%"} mb={4}>
-      <Box
-        bg="white"
-        borderRadius={16}
-        borderWidth={2}
-        borderColor="primary"
-        alignItems="center"
-        justifyContent="center"
-        h={28}
-        position="relative"
-        shadow={2}
-      >
+    <TouchableOpacity onPress={onPress} style={styles.container}>
+      <View style={styles.button}>
         {notificationDot && (
-          <Badge
-            colorScheme="danger"
-            rounded="full"
-            position="absolute"
-            top={2}
-            right={2}
-            w={3}
-            h={3}
-            p={0}
-          />
+          <View style={styles.notificationDot} />
         )}
-        <VStack alignItems="center" space={2}>
+        <View style={styles.content}>
           {icon}
-          <Text fontFamily="Geist" fontWeight="500" fontSize="md" color="primary">
-            {label}
-          </Text>
-        </VStack>
-      </Box>
-    </Pressable>
+          <Text style={styles.label}>{label}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  container: {
+    width: '44%',
+    marginBottom: 16,
+  },
+  button: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#4f46e5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 112,
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#d20f39',
+  },
+  content: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  label: {
+    fontFamily: 'Geist',
+    fontWeight: '500',
+    fontSize: 16,
+    color: '#4f46e5',
+  },
+}); 

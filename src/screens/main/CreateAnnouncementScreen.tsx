@@ -1,18 +1,6 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Button,
-  FormControl,
-  Text,
-  VStack,
-  IconButton,
-  Icon,
-  StatusBar,
-  TextArea,
-  Pressable,
-  HStack,
-  useToast,
-} from 'native-base';
+import { View, StyleSheet, StatusBar, TouchableOpacity, Platform, TextInput } from 'react-native';
+import { Text, Button, HelperText, ActivityIndicator } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -23,7 +11,6 @@ import { api } from 'src/api/axios';
 import { jwtDecode } from 'jwt-decode';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from 'src/navigation/types';
-import { Platform, TextInput } from 'react-native';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'CreateAnnouncement'>;
 
@@ -40,14 +27,16 @@ const AnnouncementSchema = Yup.object().shape({
 
 export function CreateAnnouncementScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const toast = useToast();
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmitAnnouncement = async (values: any) => {
     try {
+      setSubmitting(true);
       const token = await AsyncStorage.getItem('userToken');
       if (!token) {
-        toast.show({ description: 'Token no encontrado. Inicia sesión' });
+        // TODO: Show error toast
+        setSubmitting(false);
         return;
       }
 
@@ -66,164 +55,206 @@ export function CreateAnnouncementScreen() {
         headers: { Authorization: token },
       });
 
-      toast.show({ description: 'Anuncio publicado correctamente' });
+      // TODO: Show success toast
       navigation.goBack();
     } catch (error) {
       console.error(error);
-      toast.show({ description: 'Error al publicar el anuncio' });
+      // TODO: Show error toast
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <Box flex={1} bg="#f5f6fa">
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Box safeAreaTop bg="#f5f6fa" />
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        bg="white"
-        borderRadius={16}
-        mx={3}
-        mt={3}
-        mb={6}
-        px={2}
-        py={2}
-        shadow={1}
-      >
-        <IconButton
-          icon={<Icon as={MaterialIcons} name="arrow-back-ios" size={5} color="primary" />}
-          borderRadius="full"
-          variant="ghost"
-          onPress={() => navigation.goBack()}
-        />
-        <Text
-          fontFamily="Geist"
-          fontWeight="600"
-          fontSize="lg"
-          color="primary"
-          flex={1}
-          textAlign="center"
-          mr={7}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back-ios" size={20} color="#4f46e5" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Crear Anuncio</Text>
+        <View style={{ width: 28 }} />
+      </View>
+      {submitting ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" />
+        </View>
+      ) : (
+        <Formik
+          initialValues={{ title: '', description: '', date: '', location: '' }}
+          validationSchema={AnnouncementSchema}
+          onSubmit={handleSubmitAnnouncement}
         >
-          Crear Anuncio
-        </Text>
-      </Box>
-
-      <Formik
-        initialValues={{ title: '', description: '', date: '', location: '' }}
-        validationSchema={AnnouncementSchema}
-        onSubmit={handleSubmitAnnouncement}
-      >
-        {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue }) => (
-          <VStack space={4} px={6}>
-            <FormControl isInvalid={!!(touched.title && errors.title)}>
-              <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
-                Título del anuncio
-              </FormControl.Label>
-              <TextInput
-                placeholder="Ingrese el título del anuncio"
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: 8,
-                  padding: 12,
-                  fontFamily: 'Geist',
-                }}
-                value={values.title}
-                onChangeText={handleChange('title')}
-                onBlur={handleBlur('title')}
-              />
-              <FormControl.ErrorMessage>{errors.title}</FormControl.ErrorMessage>
-            </FormControl>
-
-            <FormControl isInvalid={!!(touched.description && errors.description)}>
-              <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
-                Descripción del anuncio
-              </FormControl.Label>
-              <TextInput
-                placeholder="Ingrese la descripción del anuncio."
-                value={values.description}
-                onChangeText={text => setFieldValue('description', text)}
-                onBlur={handleBlur('description')}
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: 8,
-                  padding: 12,
-                  fontFamily: 'Geist',
-                }}
-                multiline={true}
-                numberOfLines={4}
-              />
-              <FormControl.ErrorMessage>{errors.description}</FormControl.ErrorMessage>
-            </FormControl>
-
-            <FormControl isInvalid={!!(touched.date && errors.date)}>
-              <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
-                Fecha relacionada
-              </FormControl.Label>
-              <Pressable onPress={() => setShowDatePicker(true)}>
-                <HStack alignItems="center" bg="white" borderRadius={8} px={3} py={3}>
-                  <Text fontFamily="Geist" color={values.date ? 'black' : 'muted.400'}>
-                    {values.date
-                      ? new Date(values.date).toLocaleDateString()
-                      : 'Selecciona la fecha'}
-                  </Text>
-                  <Icon
-                    as={MaterialIcons}
-                    name="expand-more"
-                    size={5}
-                    ml="auto"
-                    color="muted.400"
-                  />
-                </HStack>
-              </Pressable>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={values.date ? new Date(values.date) : new Date()}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                  onChange={(event, selectedDate) => {
-                    if (Platform.OS !== 'ios') setShowDatePicker(false);
-                    if (selectedDate) {
-                      const iso = selectedDate.toISOString().split('T')[0];
-                      setFieldValue('date', iso);
-                    }
-                  }}
+          {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue }) => (
+            <View style={styles.form}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Título del anuncio</Text>
+                <TextInput
+                  placeholder="Ingrese el título del anuncio"
+                  style={styles.input}
+                  value={values.title}
+                  onChangeText={handleChange('title')}
+                  onBlur={handleBlur('title')}
                 />
-              )}
-              <FormControl.ErrorMessage>{errors.date}</FormControl.ErrorMessage>
-            </FormControl>
-
-            <FormControl>
-              <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
-                Ubicación del anuncio (opcional)
-              </FormControl.Label>
-              <TextInput
-                placeholder="Ej: Plaza de Armas, Temuco"
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: 8,
-                  padding: 12,
-                  fontFamily: 'Geist',
-                }}
-                value={values.location}
-                onChangeText={handleChange('location')}
-                onBlur={handleBlur('location')}
-              />
-            </FormControl>
-
-            <Button
-              mt={6}
-              w="100%"
-              bg="teal.600"
-              _text={{ fontFamily: 'Geist', fontWeight: '600', fontSize: 'md' }}
-              borderRadius={12}
-              onPress={handleSubmit as any}
-            >
-              Publicar
-            </Button>
-          </VStack>
-        )}
-      </Formik>
-    </Box>
+                <HelperText type="error" visible={!!(touched.title && errors.title)}>
+                  {errors.title}
+                </HelperText>
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Descripción del anuncio</Text>
+                <TextInput
+                  placeholder="Ingrese la descripción del anuncio."
+                  value={values.description}
+                  onChangeText={text => setFieldValue('description', text)}
+                  onBlur={handleBlur('description')}
+                  style={[styles.input, { minHeight: 80 }]}
+                  multiline={true}
+                  numberOfLines={4}
+                />
+                <HelperText type="error" visible={!!(touched.description && errors.description)}>
+                  {errors.description}
+                </HelperText>
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Fecha relacionada</Text>
+                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
+                  <View style={styles.datePickerContent}>
+                    <Text style={[styles.dateText, { color: values.date ? '#000' : '#9ca3af' }]}> 
+                      {values.date
+                        ? new Date(values.date).toLocaleDateString()
+                        : 'Selecciona la fecha'}
+                    </Text>
+                    <MaterialIcons name="expand-more" size={20} color="#9ca3af" style={{ marginLeft: 'auto' }} />
+                  </View>
+                </TouchableOpacity>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={values.date ? new Date(values.date) : new Date()}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                    onChange={(event, selectedDate) => {
+                      if (Platform.OS !== 'ios') setShowDatePicker(false);
+                      if (selectedDate) {
+                        const iso = selectedDate.toISOString().split('T')[0];
+                        setFieldValue('date', iso);
+                      }
+                    }}
+                  />
+                )}
+                <HelperText type="error" visible={!!(touched.date && errors.date)}>
+                  {errors.date}
+                </HelperText>
+              </View>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Ubicación del anuncio (opcional)</Text>
+                <TextInput
+                  placeholder="Ingrese la ubicación"
+                  style={styles.input}
+                  value={values.location}
+                  onChangeText={handleChange('location')}
+                  onBlur={handleBlur('location')}
+                />
+              </View>
+              <Button
+                mode="contained"
+                onPress={handleSubmit as any}
+                style={styles.saveButton}
+                labelStyle={styles.saveButtonText}
+              >
+                Publicar
+              </Button>
+            </View>
+          )}
+        </Formik>
+      )}
+    </View>
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f6fa',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2.22,
+    elevation: 1,
+  },
+  backButton: {
+    borderRadius: 999,
+    padding: 4,
+  },
+  headerTitle: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 18,
+    color: '#4f46e5',
+    flex: 1,
+    textAlign: 'center',
+    marginRight: 28,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  form: {
+    paddingHorizontal: 24,
+    marginTop: 8,
+    gap: 16,
+  },
+  inputGroup: {
+    marginBottom: 8,
+  },
+  label: {
+    fontFamily: 'Geist',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  input: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 12,
+    fontFamily: 'Geist',
+    fontSize: 16,
+  },
+  datePickerButton: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    marginTop: 2,
+    marginBottom: 2,
+  },
+  datePickerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateText: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 16,
+  },
+  saveButton: {
+    marginTop: 16,
+    borderRadius: 12,
+    backgroundColor: '#7f9cf5',
+  },
+  saveButtonText: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+}); 

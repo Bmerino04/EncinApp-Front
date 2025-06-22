@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, Box, Text, VStack } from 'native-base';
+import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Text } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
 
 interface AlertButtonProps {
@@ -8,28 +9,47 @@ interface AlertButtonProps {
 
 export function AlertButton({ onPress }: AlertButtonProps) {
   return (
-    <Pressable onPress={onPress} alignSelf="center" mt={6}>
-      <Box
-        borderRadius={999}
-        borderWidth={8}
-        borderColor="#FF6A00"
-        bg="white"
-        w={36}
-        h={36}
-        alignItems="center"
-        justifyContent="center"
-        shadow={4}
-      >
-        <VStack alignItems="center" space={1}>
+    <TouchableOpacity onPress={onPress} style={styles.container}>
+      <View style={styles.button}>
+        <View style={styles.content}>
           <MaterialIcons name="warning" size={40} color="#FF2D55" />
-          <Text fontFamily="Geist" fontWeight="700" fontSize="lg" color="#FF2D55" textAlign="center">
-            Emitir
-          </Text>
-          <Text fontFamily="Geist" fontWeight="700" fontSize="lg" color="#FF2D55" textAlign="center">
-            Alerta
-          </Text>
-        </VStack>
-      </Box>
-    </Pressable>
+          <Text style={styles.text}>Emitir</Text>
+          <Text style={styles.text}>Alerta</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  container: {
+    alignSelf: 'center',
+    marginTop: 24,
+  },
+  button: {
+    borderRadius: 999,
+    borderWidth: 8,
+    borderColor: '#FF6A00',
+    backgroundColor: 'white',
+    width: 144,
+    height: 144,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  content: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  text: {
+    fontFamily: 'Geist',
+    fontWeight: '700',
+    fontSize: 18,
+    color: '#FF2D55',
+    textAlign: 'center',
+  },
+}); 

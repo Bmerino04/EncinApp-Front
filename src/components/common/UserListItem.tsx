@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, HStack, VStack, Text, Icon, Pressable } from 'native-base';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export interface User {
@@ -19,32 +20,91 @@ interface UserListItemProps {
 
 export function UserListItem({ user, onPress }: UserListItemProps) {
   return (
-    <Pressable onPress={onPress} borderRadius={16} mb={3}>
-      <Box bg="white" borderRadius={16} px={4} py={3} shadow={1}>
-        <HStack alignItems="center" space={3}>
-          <Box bg="muted.200" borderRadius={999} p={2}>
-            <Icon as={MaterialIcons} name="person" size={7} color="muted.400" />
-          </Box>
-          <VStack flex={1}>
-            <Text fontFamily="Geist" fontWeight="600" fontSize="md">
+    <TouchableOpacity onPress={onPress} style={styles.container}>
+      <View style={styles.card}>
+        <View style={styles.content}>
+          <View style={styles.avatar}>
+            <MaterialIcons name="person" size={28} color="#9ca3af" />
+          </View>
+          <View style={styles.userInfo}>
+            <Text style={styles.name}>
               {user.nombre}
             </Text>
             {user.disponibilidad ? (
-              <HStack alignItems="center" space={1}>
-                <Box w={2} h={2} borderRadius={999} bg="green.500" />
-                <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.600">
+              <View style={styles.statusContainer}>
+                <View style={styles.statusDot} />
+                <Text style={styles.statusText}>
                   en casa
                 </Text>
-              </HStack>
+              </View>
             ) : (
-              <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.400">
+              <Text style={styles.unavailableText}>
                 No disponible
               </Text>
             )}
-          </VStack>
-          <Icon as={MaterialIcons} name="chevron-right" size={6} color="muted.400" />
-        </HStack>
-      </Box>
-    </Pressable>
+          </View>
+          <MaterialIcons name="chevron-right" size={24} color="#9ca3af" />
+        </View>
+      </View>
+    </TouchableOpacity>
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  container: {
+    borderRadius: 16,
+    marginBottom: 12,
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2.22,
+    elevation: 1,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  avatar: {
+    backgroundColor: '#e5e7eb',
+    borderRadius: 999,
+    padding: 8,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  name: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10b981',
+  },
+  statusText: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  unavailableText: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#9ca3af',
+  },
+}); 

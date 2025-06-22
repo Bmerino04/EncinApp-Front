@@ -1,6 +1,5 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { NativeBaseProvider } from 'native-base';
-import { theme } from './theme/catppuccinLatte';
+import { PaperProvider } from 'react-native-paper';
 import { RootNavigator } from 'src/navigation/RootNavigator';
 import * as Font from 'expo-font';
 import { useEffect, useState } from 'react';
@@ -34,7 +33,7 @@ export default function App() {
   }
 
   return (
-    <NativeBaseProvider theme={theme}>
+    <PaperProvider>
       <NavigationContainer>
         <RootNavigator
           isAuthenticated={isAuthenticated}
@@ -42,6 +41,6 @@ export default function App() {
           onLogout={handleLogout} 
         />
       </NavigationContainer>
-    </NativeBaseProvider>
+    </PaperProvider>
   );
 }

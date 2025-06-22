@@ -1,21 +1,12 @@
 import React, { useState } from 'react';
-import { Alert, StyleSheet, TextInput } from 'react-native';
-import {
-  Box,
-  Button,
-  Center,
-  Checkbox,
-  FormControl,
-  Icon,
-  Text,
-  VStack,
-} from 'native-base';
+import { View, StyleSheet, Alert } from 'react-native';
+import { Button, Text, TextInput, Checkbox } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthStackParamList } from 'src/navigation/types';
-import { MaterialIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { api } from 'src/api/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -72,103 +63,155 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   };
 
   return (
-    <Box
-      flex={1}
-      bg={{
-        linearGradient: {
-          colors: ['#a18cd1', '#fbc2eb'],
-          start: [0, 0],
-          end: [1, 1],
-        },
-      }}
+    <LinearGradient
+      colors={['#a18cd1', '#fbc2eb']}
+      style={styles.container}
     >
-      <Center flex={1} px={6}>
-        <Box
-          w="100%"
-          maxW="350"
-          bg="white"
-          borderRadius={20}
-          p={6}
-          shadow={4}
-          style={styles.boxOpacity}
-        >
-          <Text fontFamily="Geist" fontWeight="700" fontSize="2xl" textAlign="center" mb={6}>
-            Iniciar Sesión
-          </Text>
+      <View style={styles.content}>
+        <View style={styles.card}>
+          <Text style={styles.title}>Iniciar Sesión</Text>
           <Formik
             initialValues={{ rut: '', pin: '', remember: false }}
             validationSchema={LoginSchema}
             onSubmit={handleLogin}
           >
             {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue }) => (
-              <VStack space={4}>
-                <FormControl isInvalid={!!(touched.rut && errors.rut)}>
-                  <FormControl.Label>Rut</FormControl.Label>
+              <View style={styles.form}>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Rut</Text>
                   <TextInput
+                    mode="outlined"
                     placeholder="Ingresa tu rut…"
                     value={values.rut}
                     onChangeText={handleChange('rut')}
                     onBlur={handleBlur('rut')}
                     autoCapitalize="none"
-                    style={{
-                      backgroundColor: 'white',
-                      borderRadius: 8,
-                      padding: 12,
-                      fontFamily: 'Geist',
-                      fontSize: 16,
-                      borderWidth: 1,
-                      borderColor: touched.rut && errors.rut ? '#d20f39' : '#bcc0cc',
-                      marginBottom: 4,
-                    }}
+                    style={styles.input}
+                    outlineStyle={[
+                      styles.inputOutline,
+                      touched.rut && errors.rut && styles.inputError
+                    ]}
+                    error={!!(touched.rut && errors.rut)}
                   />
-                  <FormControl.ErrorMessage>{errors.rut}</FormControl.ErrorMessage>
-                </FormControl>
+                  {touched.rut && errors.rut && (
+                    <Text style={styles.errorText}>{errors.rut}</Text>
+                  )}
+                </View>
 
-                <FormControl isInvalid={!!(touched.pin && errors.pin)}>
-                  <FormControl.Label>Pin</FormControl.Label>
+                <View style={styles.inputContainer}>
+                  <Text style={styles.label}>Pin</Text>
                   <TextInput
+                    mode="outlined"
                     placeholder="Ingresa tu Pin…"
                     value={values.pin}
                     onChangeText={handleChange('pin')}
                     onBlur={handleBlur('pin')}
                     autoCapitalize="none"
                     secureTextEntry={!showPin}
-                    style={{
-                      backgroundColor: 'white',
-                      borderRadius: 8,
-                      padding: 12,
-                      fontFamily: 'Geist',
-                      fontSize: 16,
-                      borderWidth: 1,
-                      borderColor: touched.pin && errors.pin ? '#d20f39' : '#bcc0cc',
-                      marginBottom: 4,
-                    }}
+                    style={styles.input}
+                    outlineStyle={[
+                      styles.inputOutline,
+                      touched.pin && errors.pin && styles.inputError
+                    ]}
+                    error={!!(touched.pin && errors.pin)}
                   />
-                  <FormControl.ErrorMessage>{errors.pin}</FormControl.ErrorMessage>
-                </FormControl>
+                  {touched.pin && errors.pin && (
+                    <Text style={styles.errorText}>{errors.pin}</Text>
+                  )}
+                </View>
 
-                <Checkbox
-                  value="remember"
-                  isChecked={values.remember}
-                  onChange={v => setFieldValue('remember', v)}
+                <Checkbox.Item
+                  label="Recuerda mi sesión"
+                  status={values.remember ? 'checked' : 'unchecked'}
+                  onPress={() => setFieldValue('remember', !values.remember)}
+                  style={styles.checkbox}
+                />
+
+                <Button
+                  mode="contained"
+                  onPress={handleSubmit as any}
+                  style={styles.button}
+                  labelStyle={styles.buttonText}
                 >
-                  Recuerda mi sesión
-                </Checkbox>
-
-                <Button mt={2} onPress={handleSubmit as any}>
                   Iniciar Sesión
                 </Button>
-              </VStack>
+              </View>
             )}
           </Formik>
-        </Box>
-      </Center>
-    </Box>
+        </View>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  boxOpacity: {
+  container: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  card: {
+    width: '100%',
+    maxWidth: 350,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
     opacity: 0.9,
+  },
+  title: {
+    fontFamily: 'Geist-Bold',
+    fontSize: 24,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  form: {
+    gap: 16,
+  },
+  inputContainer: {
+    marginBottom: 8,
+  },
+  label: {
+    fontFamily: 'Geist-SemiBold',
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: 'white',
+    fontFamily: 'Geist',
+    fontSize: 16,
+  },
+  inputOutline: {
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#bcc0cc',
+  },
+  inputError: {
+    borderColor: '#d20f39',
+  },
+  errorText: {
+    color: '#d20f39',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  checkbox: {
+    paddingHorizontal: 0,
+  },
+  button: {
+    marginTop: 8,
+    borderRadius: 8,
+    backgroundColor: '#4f46e5',
+  },
+  buttonText: {
+    fontFamily: 'Geist-SemiBold',
+    fontSize: 16,
   },
 }); 

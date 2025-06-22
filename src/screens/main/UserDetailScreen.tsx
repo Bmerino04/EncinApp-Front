@@ -1,16 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  Box,
-  Text,
-  IconButton,
-  Icon,
-  StatusBar,
-  VStack,
-  Divider,
-  Pressable,
-  Spinner,
-  Center,
-} from 'native-base';
+import { View, StyleSheet, StatusBar, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, Divider, ActivityIndicator } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { RouteProp } from '@react-navigation/native';
@@ -43,7 +33,6 @@ export function UserDetailScreen() {
   const [user, setUser] = useState<UsuarioApi | null>(null);
   const [loading, setLoading] = useState(true);
   const [showPermModal, setShowPermModal] = useState(false);
-  const [permisos, setPermisos] = useState<string[]>([]);
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [esPresidente, setEsPresidente] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -65,7 +54,6 @@ export function UserDetailScreen() {
 
       const datos: UsuarioApi = response.data.usuarioEncontrado;
       setUser(datos);
-      setPermisos([]);
       setEsPresidente(datos.es_presidente);
     } catch (error) {
       console.error('Error fetching user detail:', error);
@@ -87,173 +75,232 @@ export function UserDetailScreen() {
 
   if (loading) {
     return (
-      <Box flex={1} bg="#f5f6fa">
-        <Center flex={1}>
-          <Spinner size="lg" />
-        </Center>
-      </Box>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+      </View>
     );
   }
 
   if (!user) {
     return (
-      <Box flex={1} alignItems="center" justifyContent="center" bg="#f5f6fa">
-        <Text fontFamily="Geist" fontSize="md" color="muted.500">
-          No se encontró el usuario.
-        </Text>
-      </Box>
+      <View style={styles.notFoundContainer}>
+        <Text style={styles.notFoundText}>No se encontró el usuario.</Text>
+      </View>
     );
   }
 
   const isViewingOwnProfile = currentUserId === user.id_usuario;
 
   return (
-    <Box flex={1} bg="#f5f6fa">
+    <ScrollView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Box safeAreaTop bg="#f5f6fa" />
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        bg="white"
-        borderRadius={16}
-        mx={3}
-        mt={3}
-        mb={6}
-        px={2}
-        py={2}
-        shadow={1}
-      >
-        <IconButton
-          icon={<Icon as={MaterialIcons} name="arrow-back-ios" size={5} color="primary" />}
-          borderRadius="full"
-          variant="ghost"
-          onPress={() => navigation.goBack()}
-        />
-        <Text
-          fontFamily="Geist"
-          fontWeight="600"
-          fontSize="lg"
-          color="primary"
-          flex={1}
-          textAlign="center"
-          mr={7}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back-ios" size={20} color="#4f46e5" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Vecino</Text>
+        <View style={{ width: 28 }} />
+      </View>
+      <View style={styles.centeredInfo}>
+        <Text style={styles.name}>{user.nombre}</Text>
+        <Text style={styles.rut}>{user.rut}</Text>
+        <Text style={styles.address}>{user.direccion}</Text>
+        <Text style={styles.status}>{user.disponibilidad ? 'Disponible' : 'No disponible'}</Text>
+      </View>
+      <View style={styles.card}>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('EditUserName', {
+              id: String(user.id_usuario),
+              value: user.nombre,
+            })
+          }
         >
-          Vecino
-        </Text>
-      </Box>
-
-      <VStack alignItems="center" space={1} mb={8}>
-        <Text fontFamily="Geist" fontWeight="600" fontSize="lg" mt={2}>
-          {user.nombre}
-        </Text>
-        <Text fontFamily="Geist" fontWeight="400" fontSize="md" color="muted.500">
-          {user.rut}
-        </Text>
-        <Text fontFamily="Geist" fontWeight="400" fontSize="md" color="muted.400">
-          {user.direccion}
-        </Text>
-        <Text fontFamily="Geist" fontWeight="400" fontSize="md" color="muted.400">
-          {user.disponibilidad ? 'Disponible' : 'No disponible'}
-        </Text>
-      </VStack>
-
-      <Box bg="white" borderRadius={20} shadow={2} mx={3}>
-        <VStack divider={<Divider />}>
-          <Pressable
-            onPress={() =>
-              navigation.navigate('EditUserName', {
-                id: String(user.id_usuario),
-                value: user.nombre,
-              })
-            }
-          >
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Nombre</Text>
-            </Box>
-          </Pressable>
-
-          <Pressable
-            onPress={() =>
-              navigation.navigate('EditUserAddress', {
-                id: String(user.id_usuario),
-                value: user.direccion,
-              })
-            }
-          >
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Dirección</Text>
-            </Box>
-          </Pressable>
-
-          <Pressable
-            onPress={() =>
-              navigation.navigate('EditUserPin', {
-                id: String(user.id_usuario),
-              })
-            }
-          >
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Pin</Text>
-            </Box>
-          </Pressable>
-
-          <Pressable
-            onPress={() =>
-              navigation.navigate('EditUserRut', {
-                id: String(user.id_usuario),
-                value: user.rut,
-              })
-            }
-          >
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Cambiar Rut</Text>
-            </Box>
-          </Pressable>
-
-          <Pressable onPress={() => setShowPermModal(true)}>
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Gestionar Permisos</Text>
-            </Box>
-          </Pressable>
-
-          <Pressable onPress={() => setShowTransferModal(true)}>
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">Transferir Presidencia</Text>
-            </Box>
-          </Pressable>
-
-          {!isViewingOwnProfile && (
-            <Pressable onPress={() => setShowDeleteModal(true)}>
-              <Box px={5} py={4}>
-                <Text fontFamily="Geist" fontWeight="400" fontSize="md">Eliminar Cuenta</Text>
-              </Box>
-            </Pressable>
-          )}
-        </VStack>
-      </Box>
-
-      {/* Modales */}
+          <View style={styles.cardItem}>
+            <Text style={styles.cardItemText}>Cambiar Nombre</Text>
+          </View>
+        </TouchableOpacity>
+        <Divider />
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('EditUserAddress', {
+              id: String(user.id_usuario),
+              value: user.direccion,
+            })
+          }
+        >
+          <View style={styles.cardItem}>
+            <Text style={styles.cardItemText}>Cambiar Dirección</Text>
+          </View>
+        </TouchableOpacity>
+        <Divider />
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('EditUserPin', {
+              id: String(user.id_usuario),
+            })
+          }
+        >
+          <View style={styles.cardItem}>
+            <Text style={styles.cardItemText}>Cambiar Pin</Text>
+          </View>
+        </TouchableOpacity>
+        <Divider />
+        {!isViewingOwnProfile && (
+          <TouchableOpacity onPress={() => setShowPermModal(true)}>
+            <View style={styles.cardItem}>
+              <Text style={styles.cardItemText}>Gestionar Permisos</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+        {!isViewingOwnProfile && <Divider />}
+        {!isViewingOwnProfile && esPresidente && (
+          <TouchableOpacity onPress={() => setShowTransferModal(true)}>
+            <View style={styles.cardItem}>
+              <Text style={styles.cardItemText}>Transferir Presidencia</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+        {!isViewingOwnProfile && esPresidente && <Divider />}
+        {!isViewingOwnProfile && (
+          <TouchableOpacity onPress={() => setShowDeleteModal(true)}>
+            <View style={styles.cardItemDanger}>
+              <Text style={styles.cardItemDangerText}>Eliminar Usuario</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      </View>
       <ManagePermissionsModal
         isOpen={showPermModal}
         onClose={() => setShowPermModal(false)}
         idUsuario={user.id_usuario}
       />
-
       <TransferPresidencyModal
         isOpen={showTransferModal}
         onCancel={() => setShowTransferModal(false)}
         onConfirm={() => {
-          setEsPresidente(false);
           setShowTransferModal(false);
+          fetchUsuario();
         }}
         userName={user.nombre}
       />
-
       <DeleteUserModal
         isOpen={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         idUsuario={user.id_usuario}
       />
-    </Box>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f6fa',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  notFoundContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f5f6fa',
+  },
+  notFoundText: {
+    fontFamily: 'Geist',
+    fontSize: 16,
+    color: '#9ca3af',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2.22,
+    elevation: 1,
+  },
+  backButton: {
+    borderRadius: 999,
+    padding: 4,
+  },
+  headerTitle: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 18,
+    color: '#4f46e5',
+    flex: 1,
+    textAlign: 'center',
+    marginRight: 28,
+  },
+  centeredInfo: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  name: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 18,
+    marginTop: 8,
+  },
+  rut: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  address: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 16,
+    color: '#9ca3af',
+  },
+  status: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 16,
+    color: '#9ca3af',
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
+    marginHorizontal: 12,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  cardItem: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  cardItemText: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 16,
+  },
+  cardItemDanger: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#fee2e2',
+  },
+  cardItemDangerText: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 16,
+    color: '#d20f39',
+  },
+});

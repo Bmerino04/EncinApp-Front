@@ -11,6 +11,9 @@ import { UserRegisterScreen } from '../screens/main/UserRegisterScreen';
 import { EditUserFieldScreen } from '../screens/main/EditUserFieldScreen';
 import { EditUserPinScreen } from '../screens/main/EditUserPinScreen';
 import { CreateAnnouncementScreen } from '../screens/main/CreateAnnouncementScreen';
+import { SelectAlertTypeScreen } from '../screens/main/SelectAlertTypeScreen';
+import { CreateAlertScreen } from '../screens/main/CreateAlertScreen';
+import { MapScreen } from '../screens/main/MapScreen';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -39,7 +42,10 @@ export function MainStack({ onLogout }: MainStackProps) {
       <Stack.Screen name="EditUserRut" component={EditUserFieldScreen} />
       <Stack.Screen name="EditUserPin" component={EditUserPinScreen} />
       <Stack.Screen name="CreateAnnouncement" component={CreateAnnouncementScreen} />
+      <Stack.Screen name="SelectAlertType" component={SelectAlertTypeScreen} />
+      <Stack.Screen name="CreateAlert" component={CreateAlertScreen} />
+      <Stack.Screen name="Map" component={MapScreen} />
       {/* <Stack.Screen name="EditUser" component={EditUserScreen} /> */}
     </Stack.Navigator>
   );
-}
+} 

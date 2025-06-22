@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Text, IconButton, Icon, StatusBar, Spinner } from 'native-base';
-import { FlatList } from 'react-native';
+import { View, StyleSheet, FlatList, StatusBar, TouchableOpacity } from 'react-native';
+import { Text, ActivityIndicator } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { UserListItem, User } from 'src/components/common/UserListItem';
@@ -55,55 +55,34 @@ export function UsersScreen() {
     return unsubscribe;
   }, [navigation]);
 
-
   if (loading) {
     return (
-      <Box flex={1} justifyContent="center" alignItems="center">
-        <Spinner size="lg" />
-      </Box>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+      </View>
     );
   }
 
   return (
-    <Box flex={1} bg="#f5f6fa">
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Box safeAreaTop bg="#f5f6fa" />
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        bg="white"
-        borderRadius={16}
-        mx={3}
-        mt={3}
-        mb={2}
-        px={2}
-        py={2}
-        shadow={1}
-      >
-        <IconButton
-          icon={<Icon as={MaterialIcons} name="arrow-back-ios" size={5} color="primary" />}
-          borderRadius="full"
-          variant="ghost"
+      <View style={styles.header}>
+        <TouchableOpacity
           onPress={() => navigation.goBack()}
-        />
-        <Text
-          fontFamily="Geist"
-          fontWeight="600"
-          fontSize="lg"
-          color="primary"
-          flex={1}
-          textAlign="center"
-          mr={7}
+          style={styles.backButton}
         >
+          <MaterialIcons name="arrow-back-ios" size={20} color="#4f46e5" />
+        </TouchableOpacity>
+        <Text style={styles.title}>
           Vecinos
         </Text>
-        <IconButton
-          icon={<Icon as={MaterialCommunityIcons} name="account-plus-outline" size={6} color="muted.500" />}
-          borderRadius="full"
-          variant="ghost"
+        <TouchableOpacity
           onPress={() => navigation.navigate('UserRegister')}
-        />
-      </Box>
+          style={styles.addButton}
+        >
+          <MaterialCommunityIcons name="account-plus-outline" size={24} color="#6b7280" />
+        </TouchableOpacity>
+      </View>
       <FlatList
         data={usuarios}
         keyExtractor={(item) => item.id_usuario.toString()}
@@ -121,9 +100,59 @@ export function UsersScreen() {
             onPress={() => navigation.navigate('UserDetail', { id: String(item.id_usuario) })}
           />
         )}
-        contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 16 }}
+        contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
       />
-    </Box>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f6fa',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2.22,
+    elevation: 1,
+  },
+  backButton: {
+    borderRadius: 999,
+    padding: 4,
+  },
+  title: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 18,
+    color: '#4f46e5',
+    flex: 1,
+    textAlign: 'center',
+    marginRight: 28,
+  },
+  addButton: {
+    borderRadius: 999,
+    padding: 4,
+  },
+  listContainer: {
+    paddingHorizontal: 8,
+    paddingBottom: 16,
+  },
+});
+ 

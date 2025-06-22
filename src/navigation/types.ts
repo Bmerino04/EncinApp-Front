@@ -22,6 +22,9 @@ export type MainStackParamList = {
   EditUserRut: { id: string; value: string };
   EditUserPin: { id: string };
   CreateAnnouncement: undefined;
+  SelectAlertType: undefined;
+  CreateAlert: { alertType: 'seguridad' | 'salud' | 'siniestro' };
+  Map: undefined;
 };
 
 export type MainTabParamList = {

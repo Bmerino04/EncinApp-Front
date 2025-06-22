@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Button, FormControl, Text, VStack, IconButton, Icon, StatusBar, useToast } from 'native-base';
+import { View, StyleSheet, StatusBar, TouchableOpacity, TextInput } from 'react-native';
+import { Text, Button, HelperText } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -8,7 +9,6 @@ import { RouteProp } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MainStackParamList } from 'src/navigation/types';
 import { api } from 'src/api/axios';
-import { TextInput } from 'react-native';
 
 type EditUserFieldRoute =
   | RouteProp<MainStackParamList, 'EditUserName'>
@@ -41,7 +41,6 @@ const FIELD_CONFIG = {
 
 export function EditUserFieldScreen() {
   const navigation = useNavigation();
-  const toast = useToast();
   const route = useRoute<EditUserFieldRoute>();
   // @ts-ignore
   const { id, value } = route.params;
@@ -57,93 +56,128 @@ export function EditUserFieldScreen() {
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) {
-        toast.show({ description: 'Token no encontrado, por favor inicia sesión' });
+        // TODO: Show error toast
         return;
       }
       const body = { [config.fieldKey]: values.field };
       await api.patch(`/usuarios/${id}`, body, {
         headers: { Authorization: token },
       });
-      toast.show({ description: 'Usuario actualizado correctamente' });
+      // TODO: Show success toast
       navigation.goBack();
     } catch (error) {
       console.error(error);
-      toast.show({ description: 'Error actualizando usuario' });
+      // TODO: Show error toast
     }
   };
 
   return (
-    <Box flex={1} bg="#f5f6fa">
+    <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Box safeAreaTop bg="#f5f6fa" />
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        bg="white"
-        borderRadius={16}
-        mx={3}
-        mt={3}
-        mb={6}
-        px={2}
-        py={2}
-        shadow={1}
-      >
-        <IconButton
-          icon={<Icon as={MaterialIcons} name="arrow-back-ios" size={5} color="primary" />}
-          borderRadius="full"
-          variant="ghost"
-          onPress={() => navigation.goBack()}
-        />
-        <Text
-          fontFamily="Geist"
-          fontWeight="600"
-          fontSize="lg"
-          color="primary"
-          flex={1}
-          textAlign="center"
-          mr={7}
-        >
-          {config.title}
-        </Text>
-      </Box>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back-ios" size={20} color="#4f46e5" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{config.title}</Text>
+        <View style={{ width: 28 }} />
+      </View>
       <Formik
         initialValues={{ field: value || '' }}
         validationSchema={validationSchema}
         onSubmit={handleSave}
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
-          <VStack space={6} px={6} mt={8}>
-            <FormControl isInvalid={!!(touched.field && errors.field)}>
-              <FormControl.Label _text={{ fontFamily: 'Geist', fontWeight: '500' }}>
-                {config.label}
-              </FormControl.Label>
+          <View style={styles.form}>
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>{config.label}</Text>
               <TextInput
                 placeholder={config.placeholder}
-                style={{
-                  backgroundColor: 'white',
-                  borderRadius: 8,
-                  padding: 12,
-                  fontFamily: 'Geist',
-                }}
+                style={styles.input}
                 value={values.field}
                 onChangeText={handleChange('field')}
                 onBlur={handleBlur('field')}
               />
-              <FormControl.ErrorMessage>{errors.field}</FormControl.ErrorMessage>
-            </FormControl>
+              <HelperText type="error" visible={!!(touched.field && errors.field)}>
+                {errors.field}
+              </HelperText>
+            </View>
             <Button
-              mt={4}
-              w="100%"
-              bg="#7f9cf5"
-              _text={{ fontFamily: 'Geist', fontWeight: '600', fontSize: 'md' }}
-              borderRadius={12}
+              mode="contained"
               onPress={handleSubmit as any}
+              style={styles.saveButton}
+              labelStyle={styles.saveButtonText}
             >
               Guardar
             </Button>
-          </VStack>
+          </View>
         )}
       </Formik>
-    </Box>
+    </View>
   );
-} 
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f6fa',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2.22,
+    elevation: 1,
+  },
+  backButton: {
+    borderRadius: 999,
+    padding: 4,
+  },
+  headerTitle: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 18,
+    color: '#4f46e5',
+    flex: 1,
+    textAlign: 'center',
+    marginRight: 28,
+  },
+  form: {
+    paddingHorizontal: 24,
+    marginTop: 32,
+    gap: 24,
+  },
+  inputGroup: {
+    marginBottom: 8,
+  },
+  label: {
+    fontFamily: 'Geist',
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  input: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 12,
+    fontFamily: 'Geist',
+    fontSize: 16,
+  },
+  saveButton: {
+    marginTop: 16,
+    borderRadius: 12,
+    backgroundColor: '#7f9cf5',
+  },
+  saveButtonText: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+}); 

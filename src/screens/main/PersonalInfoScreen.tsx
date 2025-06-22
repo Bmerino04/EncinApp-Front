@@ -1,19 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import {
-  Box,
-  Text,
-  IconButton,
-  Icon,
-  StatusBar,
-  VStack,
-  Divider,
-  Pressable,
-  Switch,
-  HStack,
-  Spinner,
-  useToast,
-  Center,
-} from 'native-base';
+import { View, StyleSheet, StatusBar, TouchableOpacity, Switch, ScrollView } from 'react-native';
+import { Text, Divider, ActivityIndicator } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LogoutConfirmModal } from 'src/components/common/LogoutConfirmModal';
@@ -22,7 +9,6 @@ import { api } from 'src/api/axios';
 import { jwtDecode } from 'jwt-decode';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from 'src/navigation/types';
-import { TextInput } from 'react-native';
 
 interface UsuarioApi {
   id_usuario: number;
@@ -37,7 +23,7 @@ interface UsuarioApi {
 type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'PersonalInfo'>;
 
 interface PersonalInfoScreenProps {
-  onLogout: () => void;  // <-- nueva prop
+  onLogout: () => void;
 }
 
 export function PersonalInfoScreen({ onLogout }: PersonalInfoScreenProps) {
@@ -46,7 +32,6 @@ export function PersonalInfoScreen({ onLogout }: PersonalInfoScreenProps) {
   const [loading, setLoading] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
-  const toast = useToast();
 
   const fetchUsuario = useCallback(async () => {
     setLoading(true);
@@ -97,17 +82,9 @@ export function PersonalInfoScreen({ onLogout }: PersonalInfoScreenProps) {
 
       if (response.status === 200) {
         setUsuario({ ...usuario, disponibilidad: nuevaDisponibilidad });
-        toast.show({
-          description: 'Disponibilidad actualizada',
-          placement: 'top',
-        });
       }
     } catch (error) {
       console.error('Error al actualizar disponibilidad:', error);
-      toast.show({
-        description: 'Error al actualizar disponibilidad',
-        placement: 'top',
-      });
     } finally {
       setIsToggling(false);
     }
@@ -116,164 +93,198 @@ export function PersonalInfoScreen({ onLogout }: PersonalInfoScreenProps) {
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('userToken');
-      onLogout(); // Actualiza estado global de autenticación
-      // navigation.reset({ index: 0, routes: [{ name: 'Auth' }] }); // No necesario porque el cambio de estado cambia la navegación
+      onLogout();
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
-      toast.show({
-        description: 'Error al cerrar sesión',
-        placement: 'top',
-      });
     }
   };
 
   if (loading || !usuario) {
     return (
-      <Box flex={1} justifyContent="center" alignItems="center">
-        <Spinner size="lg" />
-      </Box>
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" />
+      </View>
     );
   }
 
   return (
-    <Box flex={1} bg="#f5f6fa">
+    <ScrollView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Box safeAreaTop bg="#f5f6fa" />
-      <Box
-        flexDirection="row"
-        alignItems="center"
-        bg="white"
-        borderRadius={16}
-        mx={3}
-        mt={3}
-        mb={6}
-        px={2}
-        py={2}
-        shadow={1}
-      >
-        <IconButton
-          icon={<Icon as={MaterialIcons} name="arrow-back-ios" size={5} color="primary" />}
-          borderRadius="full"
-          variant="ghost"
-          onPress={() => navigation.goBack()}
-        />
-        <Text
-          fontFamily="Geist"
-          fontWeight="600"
-          fontSize="lg"
-          color="primary"
-          flex={1}
-          textAlign="center"
-          mr={7}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <MaterialIcons name="arrow-back-ios" size={20} color="#4f46e5" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Información Personal</Text>
+        <View style={{ width: 28 }} />
+      </View>
+      <View style={styles.centeredInfo}>
+        <Text style={styles.name}>{usuario.nombre}</Text>
+        <Text style={styles.rut}>{usuario.rut}</Text>
+        <Text style={styles.address}>{usuario.direccion}</Text>
+      </View>
+      <View style={styles.card}>
+        <View style={styles.row}>
+          <Text style={styles.cardItemText}>Disponibilidad</Text>
+          <Switch
+            value={usuario.disponibilidad}
+            onValueChange={toggleDisponibilidad}
+            disabled={isToggling}
+            trackColor={{ false: '#e5e7eb', true: '#7f9cf5' }}
+            thumbColor={usuario.disponibilidad ? '#4f46e5' : '#f4f3f4'}
+          />
+        </View>
+        <Divider />
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('EditUserName', {
+              id: String(usuario.id_usuario),
+              value: usuario.nombre,
+            })
+          }
         >
-          Información Personal
-        </Text>
-      </Box>
-
-      <VStack alignItems="center" space={1} mb={8}>
-        <Text fontFamily="Geist" fontWeight="600" fontSize="lg" mt={2}>
-          {usuario.nombre}
-        </Text>
-        <Text fontFamily="Geist" fontWeight="400" fontSize="md" color="muted.500">
-          {usuario.rut}
-        </Text>
-        <Text fontFamily="Geist" fontWeight="400" fontSize="md" color="muted.400">
-          {usuario.direccion}
-        </Text>
-      </VStack>
-
-      <Box bg="white" borderRadius={20} shadow={2} mx={3}>
-        <VStack divider={<Divider />}>
-          <HStack alignItems="center" justifyContent="space-between" px={5} py={4}>
-            <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-              Disponibilidad
-            </Text>
-            <Switch
-              isChecked={usuario.disponibilidad}
-              isDisabled={isToggling}
-              onToggle={toggleDisponibilidad}
-              offTrackColor="muted.300"
-              onTrackColor="primary.400"
-            />
-          </HStack>
-
-          <Pressable
-            onPress={() =>
-              navigation.navigate('EditUserName', {
-                id: String(usuario.id_usuario),
-                value: usuario.nombre,
-              })
-            }
-          >
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cambiar Nombre
-              </Text>
-            </Box>
-          </Pressable>
-
-          <Pressable
-            onPress={() =>
-              navigation.navigate('EditUserAddress', {
-                id: String(usuario.id_usuario),
-                value: usuario.direccion,
-              })
-            }
-          >
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cambiar Dirección
-              </Text>
-            </Box>
-          </Pressable>
-
-          <Pressable
-            onPress={() =>
-              navigation.navigate('EditUserRut', {
-                id: String(usuario.id_usuario),
-                value: usuario.rut,
-              })
-            }
-          >
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cambiar Rut
-              </Text>
-            </Box>
-          </Pressable>
-
-          <Pressable
-            onPress={() =>
-              navigation.navigate('EditUserPin', {
-                id: String(usuario.id_usuario),
-              })
-            }
-          >
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cambiar Pin
-              </Text>
-            </Box>
-          </Pressable>
-
-          <Pressable onPress={() => setShowLogoutModal(true)}>
-            <Box px={5} py={4}>
-              <Text fontFamily="Geist" fontWeight="400" fontSize="md">
-                Cerrar sesión
-              </Text>
-            </Box>
-          </Pressable>
-        </VStack>
-      </Box>
-
+          <View style={styles.cardItem}>
+            <Text style={styles.cardItemText}>Cambiar Nombre</Text>
+          </View>
+        </TouchableOpacity>
+        <Divider />
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('EditUserAddress', {
+              id: String(usuario.id_usuario),
+              value: usuario.direccion,
+            })
+          }
+        >
+          <View style={styles.cardItem}>
+            <Text style={styles.cardItemText}>Cambiar Dirección</Text>
+          </View>
+        </TouchableOpacity>
+        <Divider />
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('EditUserPin', {
+              id: String(usuario.id_usuario),
+            })
+          }
+        >
+          <View style={styles.cardItem}>
+            <Text style={styles.cardItemText}>Cambiar Pin</Text>
+          </View>
+        </TouchableOpacity>
+        <Divider />
+        <TouchableOpacity onPress={() => setShowLogoutModal(true)}>
+          <View style={styles.cardItemDanger}>
+            <Text style={styles.cardItemDangerText}>Cerrar sesión</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
       <LogoutConfirmModal
         isOpen={showLogoutModal}
         onCancel={() => setShowLogoutModal(false)}
-        onConfirm={() => {
-          setShowLogoutModal(false);
-          handleLogout();
-        }}
+        onConfirm={handleLogout}
       />
-    </Box>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f6fa',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 16,
+    marginHorizontal: 12,
+    marginTop: 12,
+    marginBottom: 24,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2.22,
+    elevation: 1,
+  },
+  backButton: {
+    borderRadius: 999,
+    padding: 4,
+  },
+  headerTitle: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 18,
+    color: '#4f46e5',
+    flex: 1,
+    textAlign: 'center',
+    marginRight: 28,
+  },
+  centeredInfo: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  name: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+    fontSize: 18,
+    marginTop: 8,
+  },
+  rut: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 16,
+    color: '#6b7280',
+  },
+  address: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 16,
+    color: '#9ca3af',
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
+    marginHorizontal: 12,
+    marginBottom: 24,
+    overflow: 'hidden',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  cardItem: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  cardItemText: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 16,
+  },
+  cardItemDanger: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: '#fee2e2',
+  },
+  cardItemDangerText: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 16,
+    color: '#d20f39',
+  },
+});

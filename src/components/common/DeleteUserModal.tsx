@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Modal, Button, Text, VStack, HStack, useToast } from 'native-base';
+import { Modal, View, StyleSheet } from 'react-native';
+import { Button, Text } from 'react-native-paper';
 import { api } from 'src/api/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -11,7 +12,6 @@ interface DeleteUserModalProps {
 }
 
 export function DeleteUserModal({ isOpen, onCancel, idUsuario }: DeleteUserModalProps) {
-  const toast = useToast();
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +20,7 @@ export function DeleteUserModal({ isOpen, onCancel, idUsuario }: DeleteUserModal
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) {
-        toast.show({ description: 'Token no encontrado, por favor inicia sesión' });
+        // Note: We'll need to implement a toast alternative
         setLoading(false);
         return;
       }
@@ -29,51 +29,115 @@ export function DeleteUserModal({ isOpen, onCancel, idUsuario }: DeleteUserModal
         headers: { Authorization: token },
       });
 
-      toast.show({ description: 'Usuario eliminado correctamente' });
+      // Note: We'll need to implement a toast alternative
       onCancel(); // cerrar modal
       navigation.goBack(); // regresar pantalla
     } catch (error) {
       console.error(error);
-      toast.show({ description: 'Error al eliminar usuario' });
+      // Note: We'll need to implement a toast alternative
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onCancel} avoidKeyboard>
-      <Modal.Content borderRadius={16} maxW="90%">
-        <Modal.Body>
-          <VStack space={4} alignItems="center">
-            <Text fontFamily="Geist" fontWeight="700" fontSize="lg" textAlign="center">
+    <Modal
+      visible={isOpen}
+      transparent
+      animationType="fade"
+      onRequestClose={onCancel}
+    >
+      <View style={styles.overlay}>
+        <View style={styles.content}>
+          <View style={styles.body}>
+            <Text style={styles.title}>
               ¿Estás seguro de eliminar esta cuenta?
             </Text>
-            <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700" textAlign="center">
+            <Text style={styles.subtitle}>
               Esta acción no se puede deshacer.
             </Text>
-            <HStack w="100%" justifyContent="space-between" mt={2}>
+            <View style={styles.buttonContainer}>
               <Button
-                variant="ghost"
-                colorScheme="coolGray"
-                borderRadius={8}
+                mode="text"
                 onPress={onCancel}
-                _text={{ color: 'blue.500', fontFamily: 'Geist', fontWeight: '500' }}
+                style={styles.cancelButton}
+                labelStyle={styles.cancelButtonText}
               >
                 Cancelar
               </Button>
               <Button
-                bg="red.500"
-                borderRadius={8}
+                mode="contained"
                 onPress={handleDelete}
-                isLoading={loading}
-                _text={{ color: 'white', fontFamily: 'Geist', fontWeight: '600' }}
+                style={styles.deleteButton}
+                labelStyle={styles.deleteButtonText}
+                loading={loading}
               >
                 Eliminar
               </Button>
-            </HStack>
-          </VStack>
-        </Modal.Body>
-      </Modal.Content>
+            </View>
+          </View>
+        </View>
+      </View>
     </Modal>
   );
 }
+
+const styles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
+    margin: 20,
+    width: '90%',
+    maxWidth: 400,
+  },
+  body: {
+    alignItems: 'center',
+    gap: 16,
+  },
+  title: {
+    fontFamily: 'Geist',
+    fontWeight: '700',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#374151',
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  cancelButton: {
+    flex: 1,
+    marginRight: 8,
+    borderRadius: 8,
+  },
+  cancelButtonText: {
+    fontFamily: 'Geist',
+    fontWeight: '500',
+    color: '#3b82f6',
+  },
+  deleteButton: {
+    flex: 1,
+    marginLeft: 8,
+    borderRadius: 8,
+    backgroundColor: '#ef4444',
+  },
+  deleteButtonText: {
+    fontFamily: 'Geist',
+    fontWeight: '600',
+  },
+});
