@@ -25,6 +25,8 @@ export type MainStackParamList = {
   SelectAlertType: undefined;
   CreateAlert: { alertType: 'seguridad' | 'salud' | 'siniestro' };
   Map: undefined;
+  AlertHistory: undefined;
+  AlertDetail: { id: number };
 };
 
 export type MainTabParamList = {

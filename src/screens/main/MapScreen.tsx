@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
-import { Text, ActivityIndicator } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity, StatusBar, Modal } from 'react-native';
+import { Text, ActivityIndicator, Button } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { getCurrentLocation } from 'src/utils/location';
 import { api } from 'src/api/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MainStackParamList } from 'src/navigation/types';
 
 interface PointOfInterest {
   id_punto_interes: number;
@@ -17,7 +19,7 @@ interface PointOfInterest {
 }
 
 interface Alert {
-  id_alerta: number;
+  id_punto_mapa: number;
   tipo: 'salud' | 'seguridad' | 'siniestro';
   latitud: number;
   longitud: number;
@@ -36,11 +38,12 @@ const ALERT_ICONS = {
 };
 
 export function MapScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<MainStackParamList>>();
   const [loading, setLoading] = useState(true);
   const [region, setRegion] = useState<Region | null>(null);
   const [pointsOfInterest, setPointsOfInterest] = useState<PointOfInterest[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,10 +64,12 @@ export function MapScreen() {
           api.get('/puntos-interes', { headers: { Authorization: token } }),
           api.get('/alertas', { headers: { Authorization:token } }),
         ]);
-        setPointsOfInterest(poiResponse.data.puntosDeInteres);
-        setAlerts(alertsResponse.data.alertas);
+        setPointsOfInterest(Array.isArray(poiResponse.data.puntosDeInteres) ? poiResponse.data.puntosDeInteres : []);
+        setAlerts(Array.isArray(alertsResponse.data.alertasEncontradas) ? alertsResponse.data.alertasEncontradas : []);
       } catch (error) {
         console.error('Failed to fetch map data:', error);
+        setPointsOfInterest([]);
+        setAlerts([]);
       }
       setLoading(false);
     };
@@ -101,7 +106,7 @@ export function MapScreen() {
               title={poi.nombre}
             >
               <View style={[styles.markerContainer, { backgroundColor: icon.color }]}>
-                <MaterialCommunityIcons name={icon.name as any} size={24} color="white" />
+                <MaterialCommunityIcons name={icon.name as any} size={20} color="white" />
               </View>
             </Marker>
           );
@@ -110,17 +115,41 @@ export function MapScreen() {
           const icon = ALERT_ICONS[alert.tipo];
           return (
             <Marker
-              key={`alert-${alert.id_alerta}`}
+              key={`alert-${alert.id_punto_mapa}`}
               coordinate={{ latitude: alert.latitud, longitude: alert.longitud }}
               title={`Alerta de ${alert.tipo}`}
+              onPress={() => setSelectedAlert(alert)}
             >
               <View style={[styles.markerContainer, { backgroundColor: icon.color }]}>
-                <MaterialCommunityIcons name={icon.name as any} size={24} color="white" />
+                <MaterialCommunityIcons name={icon.name as any} size={20} color="white" />
               </View>
             </Marker>
           );
         })}
       </MapView>
+      {/* Alert Modal */}
+      <Modal
+        visible={!!selectedAlert}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setSelectedAlert(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>¿Ver Alerta?</Text>
+            <Text style={styles.modalText}>¿Quieres ver los detalles de esta alerta?</Text>
+            <View style={styles.modalActions}>
+              <Button mode="text" onPress={() => setSelectedAlert(null)} style={styles.modalCancel}>Cancelar</Button>
+              <Button mode="contained" onPress={() => {
+                if (selectedAlert) {
+                  navigation.navigate('AlertDetail', { id: selectedAlert.id_punto_mapa });
+                  setSelectedAlert(null);
+                }
+              }} style={styles.modalDelete}>Ver Alerta</Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -160,12 +189,48 @@ const styles = StyleSheet.create({
   },
   map: { flex: 1 },
   markerContainer: {
-    padding: 8,
-    borderRadius: 999,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
+    width: 300,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontFamily: 'Geist',
+    fontWeight: '700',
+    fontSize: 18,
+    color: '#4f46e5',
+    marginBottom: 8,
+  },
+  modalText: {
+    fontFamily: 'Geist',
+    fontSize: 15,
+    color: '#22223b',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalCancel: {
+    backgroundColor: 'transparent',
+  },
+  modalDelete: {
+    backgroundColor: '#4f46e5',
   },
 }); 

@@ -23,7 +23,7 @@ const NAV_BUTTONS = [
     icon: <MaterialIcons name="person" size={36} color="#45475a" />, label: 'Información Personal', onPress: (nav: any) => nav.navigate('PersonalInfo'),
   },
   {
-    icon: <MaterialCommunityIcons name="alert-box-outline" size={36} color="#45475a" />, label: 'Registro de Alertas', onPress: () => {},
+    icon: <MaterialCommunityIcons name="alert-box-outline" size={36} color="#45475a" />, label: 'Registro de Alertas', onPress: (nav: any) => nav.navigate('AlertHistory'),
   },
 ];
 

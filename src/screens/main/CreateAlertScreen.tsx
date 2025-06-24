@@ -37,6 +37,7 @@ interface PointOfInterest {
   longitud: number;
   contacto: string;
   distancia?: string;
+  id_punto_mapa: number;
 }
 
 export function CreateAlertScreen() {
@@ -69,10 +70,9 @@ export function CreateAlertScreen() {
             headers: { Authorization: token },
           });
 
-          const typedPoints = response.data.puntosDeInteres.filter(
-            (p: PointOfInterest) => p.tipo === alertType
-          );
-
+          console.log('POI RESPONSE', response.data);
+          const points = Array.isArray(response.data.puntosInteresEncontrados) ? response.data.puntosInteresEncontrados : [];
+          const typedPoints = points.filter((p: PointOfInterest) => p.tipo === alertType);
           const pointsWithDistance = typedPoints.map((p: PointOfInterest) => ({
             ...p,
             distancia: calculateDistance(location.latitude, location.longitude, p.latitud, p.longitud),
@@ -154,18 +154,12 @@ export function CreateAlertScreen() {
         )}
 
         {pointsOfInterest.map(point => (
-          <View key={point.id_punto_interes} style={styles.poiCard}>
-            <View style={styles.poiHeader}>
-              <Text style={styles.poiName}>{point.nombre}</Text>
-              <View style={styles.poiDistanceContainer}>
-                <MaterialIcons name="location-on" size={14} color="#6b7280" />
-                <Text style={styles.poiDistance}>A {point.distancia} km</Text>
-              </View>
+          <View key={point.id_punto_mapa} style={styles.poiCard}>
+            <Text style={styles.poiName}>{point.nombre}</Text>
+            <View style={styles.poiContact}>
+              <MaterialIcons name="phone" size={16} color="#6b7280" />
+              <Text style={styles.poiContactText}>{point.contacto}</Text>
             </View>
-            <TouchableOpacity style={styles.poiContact} onPress={() => Linking.openURL(`tel:${point.contacto}`)}>
-                <MaterialIcons name="phone" size={16} color="#6b7280" />
-                <Text style={styles.poiContactText}>{point.contacto}</Text>
-            </TouchableOpacity>
           </View>
         ))}
       </ScrollView>
@@ -235,7 +229,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 12,
     padding: 16,
-    backgroundColor: '#e0f2f1',
   },
   poiHeader: {
     flexDirection: 'row',
@@ -252,5 +245,17 @@ const styles = StyleSheet.create({
   acceptButton: { borderRadius: 12, paddingVertical: 8 },
   cancelButton: { marginTop: 8 },
   cancelButtonText: { color: '#6b7280', fontFamily: 'Geist', fontWeight: '600' },
+  poiAddressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  poiAddressText: {
+    fontFamily: 'Geist',
+    fontSize: 14,
+    color: '#6b7280',
+    marginLeft: 4,
+    flexShrink: 1,
+  },
 });
  
