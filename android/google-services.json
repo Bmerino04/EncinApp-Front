@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "31107335972",
+    "project_id": "encinapp-d9594",
+    "storage_bucket": "encinapp-d9594.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:31107335972:android:23d38a0275473ba5cf55b1",
+        "android_client_info": {
+          "package_name": "com.encinapp.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXiPAEgY4IEZmqlgSGPHb8wPJIpjssOhw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
