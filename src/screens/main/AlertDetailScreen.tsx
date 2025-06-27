@@ -7,7 +7,7 @@ import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { MainStackParamList } from 'src/navigation/types';
 import { api } from 'src/api/axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getCurrentLocation, calculateDistance } from 'src/utils/location';
+import { getCurrentLocation, calculateDistance, reverseGeocode } from 'src/utils/location';
 
 const SUGGESTED_REPLIES = [
   'En Camino',
@@ -31,6 +31,7 @@ export function AlertDetailScreen() {
   const [showDeleteAlertModal, setShowDeleteAlertModal] = useState(false);
   const [showDeleteCommentModal, setShowDeleteCommentModal] = useState<{ visible: boolean; idx: number | null }>({ visible: false, idx: null });
   const [posterName, setPosterName] = useState<string | null>(null);
+  const [address, setAddress] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,6 +66,15 @@ export function AlertDetailScreen() {
         // Get user location
         const loc = await getCurrentLocation();
         setUserLocation(loc);
+        // Reverse geocode address
+        if (alertData.latitud && alertData.longitud) {
+          try {
+            const addr = await reverseGeocode({ latitude: alertData.latitud, longitude: alertData.longitud });
+            setAddress(addr);
+          } catch (e) {
+            setAddress('Ubicación no encontrada');
+          }
+        }
       } catch (e) {
         console.log('ALERT FETCH ERROR:', e);
         setAlert(null);
@@ -146,7 +156,7 @@ export function AlertDetailScreen() {
                 <Text style={styles.alertMeta}>A {distance} km</Text>
               </View>
             )}
-            <Text style={styles.alertAddress}>{alert.direccion || `${alert.latitud}, ${alert.longitud}`}</Text>
+            <Text style={styles.alertAddress}>{address || alert.direccion || `${alert.latitud}, ${alert.longitud}`}</Text>
             <Text style={styles.alertMeta}>Publicado por: {posterName || 'Desconocido'}</Text>
             <Text style={styles.alertMeta}>{formatDate(alert.fecha_emision)} - {formatTime(alert.fecha_emision)}</Text>
           </View>
