@@ -37,6 +37,53 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "fonts": [
+      {
+        "asset": "./assets/fonts/Geist-Thin.ttf",
+        "family": "Geist",
+        "weight": "100"
+      },
+      {
+        "asset": "./assets/fonts/Geist-ExtraLight.ttf",
+        "family": "Geist",
+        "weight": "200"
+      },
+      {
+        "asset": "./assets/fonts/Geist-Light.ttf",
+        "family": "Geist",
+        "weight": "300"
+      },
+      {
+        "asset": "./assets/fonts/Geist-Regular.ttf",
+        "family": "Geist",
+        "weight": "400"
+      },
+      {
+        "asset": "./assets/fonts/Geist-Medium.ttf",
+        "family": "Geist",
+        "weight": "500"
+      },
+      {
+        "asset": "./assets/fonts/Geist-SemiBold.ttf",
+        "family": "Geist",
+        "weight": "600"
+      },
+      {
+        "asset": "./assets/fonts/Geist-Bold.ttf",
+        "family": "Geist",
+        "weight": "700"
+      },
+      {
+        "asset": "./assets/fonts/Geist-ExtraBold.ttf",
+        "family": "Geist",
+        "weight": "800"
+      },
+      {
+        "asset": "./assets/fonts/Geist-Black.ttf",
+        "family": "Geist",
+        "weight": "900"
+      }
+    ]
   }
 }
