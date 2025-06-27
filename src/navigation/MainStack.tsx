@@ -16,6 +16,7 @@ import { CreateAlertScreen } from '../screens/main/CreateAlertScreen';
 import { MapScreen } from '../screens/main/MapScreen';
 import { AlertHistoryScreen } from '../screens/main/AlertHistoryScreen';
 import { AlertDetailScreen } from '../screens/main/AlertDetailScreen';
+import { CreatePOIScreen } from 'src/screens/main/CreatePOIScreen';
 
 const Stack = createNativeStackNavigator<MainStackParamList>();
 
@@ -49,6 +50,7 @@ export function MainStack({ onLogout }: MainStackProps) {
       <Stack.Screen name="Map" component={MapScreen} />
       <Stack.Screen name="AlertHistory" component={AlertHistoryScreen} />
       <Stack.Screen name="AlertDetail" component={AlertDetailScreen} />
+      <Stack.Screen name="CreatePOI" component={CreatePOIScreen} />
       {/* <Stack.Screen name="EditUser" component={EditUserScreen} /> */}
     </Stack.Navigator>
   );

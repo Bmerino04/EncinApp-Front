@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, StatusBar, Modal } from 'react-native';
 import { Text, ActivityIndicator, Button } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import { getCurrentLocation, calculateDistance } from 'src/utils/location';
@@ -68,38 +68,43 @@ export function MapScreen() {
     return pois;
   }, [pointsOfInterest, filterType, userLocation]);
 
+  const fetchMapData = async () => {
+    setLoading(true);
+    const location = await getCurrentLocation();
+    if (location) {
+      setRegion({
+        latitude: location.latitude,
+        longitude: location.longitude,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02,
+      });
+      setUserLocation({ latitude: location.latitude, longitude: location.longitude });
+    }
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const [poiResponse, alertsResponse] = await Promise.all([
+        api.get('/puntos-interes', { headers: { Authorization: token } }),
+        api.get('/alertas?estado=1', { headers: { Authorization:token } }),
+      ]);
+      setPointsOfInterest(Array.isArray(poiResponse.data.puntosInteresEncontrados) ? poiResponse.data.puntosInteresEncontrados : []);
+      setAlerts(Array.isArray(alertsResponse.data.alertasEncontradas) ? alertsResponse.data.alertasEncontradas : []);
+    } catch (error) {
+      console.error('Failed to fetch map data:', error);
+      setPointsOfInterest([]);
+      setAlerts([]);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const location = await getCurrentLocation();
-      if (location) {
-        setRegion({
-          latitude: location.latitude,
-          longitude: location.longitude,
-          latitudeDelta: 0.02,
-          longitudeDelta: 0.02,
-        });
-        setUserLocation({ latitude: location.latitude, longitude: location.longitude });
-      }
-
-      try {
-        const token = await AsyncStorage.getItem('userToken');
-        const [poiResponse, alertsResponse] = await Promise.all([
-          api.get('/puntos-interes', { headers: { Authorization: token } }),
-          api.get('/alertas?estado=1', { headers: { Authorization:token } }),
-        ]);
-        setPointsOfInterest(Array.isArray(poiResponse.data.puntosInteresEncontrados) ? poiResponse.data.puntosInteresEncontrados : []);
-        setAlerts(Array.isArray(alertsResponse.data.alertasEncontradas) ? alertsResponse.data.alertasEncontradas : []);
-      } catch (error) {
-        console.error('Failed to fetch map data:', error);
-        setPointsOfInterest([]);
-        setAlerts([]);
-      }
-      setLoading(false);
-    };
-
-    fetchData();
+    fetchMapData();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchMapData();
+    }, [])
+  );
 
   if (loading || !region) {
     return (
@@ -160,6 +165,13 @@ export function MapScreen() {
             </TouchableOpacity>
           </View>
           <View style={styles.poiListContainer}>
+          <Button
+            mode="contained"
+            style={{ margin: 16, backgroundColor: '#4f46e5', borderRadius: 8 }}
+            onPress={() => navigation.navigate('CreatePOI')}
+          >
+            Crear Punto de Interés
+          </Button>
             {filteredPOIs.length === 0 ? (
               <Text style={styles.noPOIText}>No hay puntos de interés cercanos.</Text>
             ) : (

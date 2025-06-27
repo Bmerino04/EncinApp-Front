@@ -27,6 +27,7 @@ export type MainStackParamList = {
   Map: undefined;
   AlertHistory: undefined;
   AlertDetail: { id: number };
+  CreatePOI: undefined;
 };
 
 export type MainTabParamList = {

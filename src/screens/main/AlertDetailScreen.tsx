@@ -30,6 +30,7 @@ export function AlertDetailScreen() {
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [showDeleteAlertModal, setShowDeleteAlertModal] = useState(false);
   const [showDeleteCommentModal, setShowDeleteCommentModal] = useState<{ visible: boolean; idx: number | null }>({ visible: false, idx: null });
+  const [posterName, setPosterName] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,7 +39,26 @@ export function AlertDetailScreen() {
         const token = await AsyncStorage.getItem('userToken');
         // Fetch alert details
         const alertRes = await api.get(`/alertas/${id}`, { headers: { Authorization: token } });
-        setAlert(alertRes.data.anuncioEncontrado || alertRes.data.alertaEncontrada || alertRes.data);
+        const alertData = alertRes.data.anuncioEncontrado || alertRes.data.alertaEncontrada || alertRes.data;
+        console.log('ALERT DATA:', alertData);
+        setAlert(alertData);
+        // Fetch poster name if not present
+        if (alertData.id_usuario) {
+          try {
+            const userRes = await api.get(`/usuarios/${alertData.id_usuario}`, { headers: { Authorization: token } });
+            console.log('USER DATA:', userRes.data);
+            setPosterName(
+              (userRes.data.usuarioEncontrado && userRes.data.usuarioEncontrado.nombre) ||
+              userRes.data.nombre ||
+              null
+            );
+          } catch (e) {
+            console.log('USER FETCH ERROR:', e);
+            setPosterName(null);
+          }
+        } else {
+          setPosterName(alertData.nombre_usuario || null);
+        }
         // Fetch comments
         const commentsRes = await api.get(`/alertas/${id}/comentarios`, { headers: { Authorization: token } });
         setComments(Array.isArray(commentsRes.data.comentariosEncontrados) ? commentsRes.data.comentariosEncontrados : []);
@@ -46,6 +66,7 @@ export function AlertDetailScreen() {
         const loc = await getCurrentLocation();
         setUserLocation(loc);
       } catch (e) {
+        console.log('ALERT FETCH ERROR:', e);
         setAlert(null);
         setComments([]);
       }
@@ -126,7 +147,7 @@ export function AlertDetailScreen() {
               </View>
             )}
             <Text style={styles.alertAddress}>{alert.direccion || `${alert.latitud}, ${alert.longitud}`}</Text>
-            <Text style={styles.alertMeta}>Publicado por: {alert.nombre_usuario || 'Desconocido'}</Text>
+            <Text style={styles.alertMeta}>Publicado por: {posterName || 'Desconocido'}</Text>
             <Text style={styles.alertMeta}>{formatDate(alert.fecha_emision)} - {formatTime(alert.fecha_emision)}</Text>
           </View>
           <Text style={styles.responsesTitle}>Respuestas</Text>
