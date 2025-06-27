@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, StatusBar, TouchableOpacity, Platform, TextInput } from 'react-native';
+import { View, StyleSheet, StatusBar, TouchableOpacity, Platform, TextInput, KeyboardAvoidingView, ScrollView, Image } from 'react-native';
 import { Text, Button, HelperText, ActivityIndicator } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { Formik } from 'formik';
@@ -11,6 +11,8 @@ import { api } from 'src/api/axios';
 import { jwtDecode } from 'jwt-decode';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MainStackParamList } from 'src/navigation/types';
+import * as ImagePicker from 'expo-image-picker';
+import { Alert } from 'react-native';
 
 type NavigationProp = NativeStackNavigationProp<MainStackParamList, 'CreateAnnouncement'>;
 
@@ -29,6 +31,9 @@ export function CreateAnnouncementScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
 
   const handleSubmitAnnouncement = async (values: any) => {
     try {
@@ -43,15 +48,28 @@ export function CreateAnnouncementScreen() {
       const decoded = jwtDecode<TokenPayload>(token);
       const userId = decoded.id_usuario;
 
+      let multimedia_url = '';
+      let tipo_multimedia = '';
+      if (image) {
+        const url = await uploadToCatbox(image.uri);
+        if (!url) return;
+        multimedia_url = url;
+        tipo_multimedia = 'imagen';
+      }
+
       const payload = {
         titulo: values.title,
         cuerpo: values.description,
         fecha_relacionada: values.date,
         direccion: values.location,
         fecha_emision: new Date().toISOString().split('T')[0],
+        multimedia_url,
+        tipo_multimedia,
       };
 
-      await api.post(`/anuncios/${userId}`, payload, {
+      console.log('ANNOUNCEMENT CREATE ENDPOINT:', '/anuncios');
+      console.log('ANNOUNCEMENT CREATE PAYLOAD:', payload);
+      await api.post('/anuncios', payload, {
         headers: { Authorization: token },
       });
 
@@ -65,115 +83,174 @@ export function CreateAnnouncementScreen() {
     }
   };
 
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      setImage(result.assets[0]);
+    }
+  };
+
+  const uploadToCatbox = async (localUri: string) => {
+    setImageUploading(true);
+    const formData = new FormData();
+    formData.append('reqtype', 'fileupload');
+    formData.append('fileToUpload', {
+      uri: localUri,
+      name: 'image.jpg',
+      type: 'image/jpeg',
+    });
+    try {
+      const res = await fetch('https://catbox.moe/user/api.php', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      const url = await res.text();
+      if (url.startsWith('https://')) {
+        setImageUrl(url);
+        return url;
+      } else {
+        throw new Error('Upload failed');
+      }
+    } catch (e) {
+      Alert.alert('Error', 'No se pudo subir la imagen.');
+      return null;
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <MaterialIcons name="arrow-back-ios" size={20} color="#4f46e5" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Crear Anuncio</Text>
-        <View style={{ width: 28 }} />
-      </View>
-      {submitting ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" />
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView
+        contentContainerStyle={[styles.container, { flexGrow: 1, paddingBottom: 32 }]}
+        keyboardShouldPersistTaps="handled"
+      >
+        <StatusBar barStyle="dark-content" />
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <MaterialIcons name="arrow-back-ios" size={20} color="#4f46e5" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Crear Anuncio</Text>
+          <View style={{ width: 28 }} />
         </View>
-      ) : (
-        <Formik
-          initialValues={{ title: '', description: '', date: '', location: '' }}
-          validationSchema={AnnouncementSchema}
-          onSubmit={handleSubmitAnnouncement}
-        >
-          {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue }) => (
-            <View style={styles.form}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Título del anuncio</Text>
-                <TextInput
-                  placeholder="Ingrese el título del anuncio"
-                  style={styles.input}
-                  value={values.title}
-                  onChangeText={handleChange('title')}
-                  onBlur={handleBlur('title')}
-                />
-                <HelperText type="error" visible={!!(touched.title && errors.title)}>
-                  {errors.title}
-                </HelperText>
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Descripción del anuncio</Text>
-                <TextInput
-                  placeholder="Ingrese la descripción del anuncio."
-                  value={values.description}
-                  onChangeText={text => setFieldValue('description', text)}
-                  onBlur={handleBlur('description')}
-                  style={[styles.input, { minHeight: 80 }]}
-                  multiline={true}
-                  numberOfLines={4}
-                />
-                <HelperText type="error" visible={!!(touched.description && errors.description)}>
-                  {errors.description}
-                </HelperText>
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Fecha relacionada</Text>
-                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
-                  <View style={styles.datePickerContent}>
-                    <Text style={[styles.dateText, { color: values.date ? '#000' : '#9ca3af' }]}> 
-                      {values.date
-                        ? new Date(values.date).toLocaleDateString()
-                        : 'Selecciona la fecha'}
-                    </Text>
-                    <MaterialIcons name="expand-more" size={20} color="#9ca3af" style={{ marginLeft: 'auto' }} />
-                  </View>
-                </TouchableOpacity>
-                {showDatePicker && (
-                  <DateTimePicker
-                    value={values.date ? new Date(values.date) : new Date()}
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                    onChange={(event, selectedDate) => {
-                      if (Platform.OS !== 'ios') setShowDatePicker(false);
-                      if (selectedDate) {
-                        const iso = selectedDate.toISOString().split('T')[0];
-                        setFieldValue('date', iso);
-                      }
-                    }}
+        {submitting ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" />
+          </View>
+        ) : (
+          <Formik
+            initialValues={{ title: '', description: '', date: '', location: '' }}
+            validationSchema={AnnouncementSchema}
+            onSubmit={handleSubmitAnnouncement}
+          >
+            {({ handleChange, handleBlur, handleSubmit, values, errors, touched, setFieldValue }) => (
+              <View style={styles.form}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Título del anuncio</Text>
+                  <TextInput
+                    placeholder="Ingrese el título del anuncio"
+                    style={styles.input}
+                    value={values.title}
+                    onChangeText={handleChange('title')}
+                    onBlur={handleBlur('title')}
                   />
+                  <HelperText type="error" visible={!!(touched.title && errors.title)}>
+                    {errors.title}
+                  </HelperText>
+                </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Descripción del anuncio</Text>
+                  <TextInput
+                    placeholder="Ingrese la descripción del anuncio."
+                    value={values.description}
+                    onChangeText={text => setFieldValue('description', text)}
+                    onBlur={handleBlur('description')}
+                    style={[styles.input, { minHeight: 80 }]}
+                    multiline={true}
+                    numberOfLines={4}
+                  />
+                  <HelperText type="error" visible={!!(touched.description && errors.description)}>
+                    {errors.description}
+                  </HelperText>
+                </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Fecha relacionada</Text>
+                  <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.datePickerButton}>
+                    <View style={styles.datePickerContent}>
+                      <Text style={[styles.dateText, { color: values.date ? '#000' : '#9ca3af' }]}> 
+                        {values.date
+                          ? new Date(values.date).toLocaleDateString()
+                          : 'Selecciona la fecha'}
+                      </Text>
+                      <MaterialIcons name="expand-more" size={20} color="#9ca3af" style={{ marginLeft: 'auto' }} />
+                    </View>
+                  </TouchableOpacity>
+                  {showDatePicker && (
+                    <DateTimePicker
+                      value={values.date ? new Date(values.date) : new Date()}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                      onChange={(event, selectedDate) => {
+                        if (Platform.OS !== 'ios') setShowDatePicker(false);
+                        if (selectedDate) {
+                          const iso = selectedDate.toISOString().split('T')[0];
+                          setFieldValue('date', iso);
+                        }
+                      }}
+                    />
+                  )}
+                  <HelperText type="error" visible={!!(touched.date && errors.date)}>
+                    {errors.date}
+                  </HelperText>
+                </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Ubicación del anuncio (opcional)</Text>
+                  <TextInput
+                    placeholder="Ingrese la ubicación"
+                    style={styles.input}
+                    value={values.location}
+                    onChangeText={handleChange('location')}
+                    onBlur={handleBlur('location')}
+                  />
+                </View>
+                <Button
+                  mode="outlined"
+                  style={{ marginVertical: 12 }}
+                  onPress={pickImage}
+                  loading={imageUploading}
+                  disabled={imageUploading}
+                >
+                  {image ? 'Cambiar Imagen' : 'Agregar Imagen'}
+                </Button>
+                {image && (
+                  <Image source={{ uri: image.uri }} style={{ width: '100%', height: 200, borderRadius: 12, marginBottom: 12 }} />
                 )}
-                <HelperText type="error" visible={!!(touched.date && errors.date)}>
-                  {errors.date}
-                </HelperText>
+                <Button
+                  mode="contained"
+                  onPress={handleSubmit as any}
+                  style={styles.saveButton}
+                  labelStyle={styles.saveButtonText}
+                >
+                  Publicar
+                </Button>
               </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Ubicación del anuncio (opcional)</Text>
-                <TextInput
-                  placeholder="Ingrese la ubicación"
-                  style={styles.input}
-                  value={values.location}
-                  onChangeText={handleChange('location')}
-                  onBlur={handleBlur('location')}
-                />
-              </View>
-              <Button
-                mode="contained"
-                onPress={handleSubmit as any}
-                style={styles.saveButton}
-                labelStyle={styles.saveButtonText}
-              >
-                Publicar
-              </Button>
-            </View>
-          )}
-        </Formik>
-      )}
-    </View>
+            )}
+          </Formik>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#f5f6fa',
   },
   header: {
