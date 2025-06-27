@@ -6,10 +6,13 @@ import { MainStack } from './MainStack';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export function RootNavigator() {
-  // Toggle this for testing auth flow
-  const isAuthenticated = true; // Set to false to test login flow
+interface RootNavigatorProps {
+  isAuthenticated: boolean;
+  onLogin: () => void;
+  onLogout: () => void;
+}
 
+export function RootNavigator({ isAuthenticated, onLogin, onLogout }: RootNavigatorProps) {
   return (
     <Stack.Navigator
       screenOptions={{
@@ -17,10 +20,14 @@ export function RootNavigator() {
       }}
     >
       {!isAuthenticated ? (
-        <Stack.Screen name="Auth" component={AuthStack} />
+        <Stack.Screen name="Auth">
+          {(props) => <AuthStack {...props} onLogin={onLogin} />}
+        </Stack.Screen>
       ) : (
-        <Stack.Screen name="Main" component={MainStack} />
+        <Stack.Screen name="Main">
+          {(props) => <MainStack {...props} onLogout={onLogout} />}
+        </Stack.Screen>
       )}
     </Stack.Navigator>
   );
-} 
+}

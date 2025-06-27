@@ -16,6 +16,18 @@ export type MainStackParamList = {
   AnnouncementDetail: { id: string };
   UserDetail: { id: string };
   EditUser: { id: string };
+  UserRegister: undefined;
+  EditUserName: { id: string; value: string };
+  EditUserAddress: { id: string; value: string };
+  EditUserRut: { id: string; value: string };
+  EditUserPin: { id: string };
+  CreateAnnouncement: undefined;
+  SelectAlertType: undefined;
+  CreateAlert: { alertType: 'seguridad' | 'salud' | 'siniestro' };
+  Map: undefined;
+  AlertHistory: undefined;
+  AlertDetail: { id: number };
+  CreatePOI: undefined;
 };
 
 export type MainTabParamList = {

@@ -2,13 +2,13 @@ import React from 'react';
 import { Modal, View, StyleSheet } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
-interface ConfirmDeleteModalProps {
+interface LogoutConfirmModalProps {
   isOpen: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-export function ConfirmDeleteModal({ isOpen, onCancel, onConfirm }: ConfirmDeleteModalProps) {
+export function LogoutConfirmModal({ isOpen, onCancel, onConfirm }: LogoutConfirmModalProps) {
   return (
     <Modal
       visible={isOpen}
@@ -20,7 +20,10 @@ export function ConfirmDeleteModal({ isOpen, onCancel, onConfirm }: ConfirmDelet
         <View style={styles.content}>
           <View style={styles.body}>
             <Text style={styles.title}>
-              ¿Estás seguro de eliminar este anuncio?
+              ¿Cerrar sesión?
+            </Text>
+            <Text style={styles.subtitle}>
+              ¿Estás seguro de que quieres cerrar tu sesión?
             </Text>
             <View style={styles.buttonContainer}>
               <Button
@@ -34,10 +37,10 @@ export function ConfirmDeleteModal({ isOpen, onCancel, onConfirm }: ConfirmDelet
               <Button
                 mode="contained"
                 onPress={onConfirm}
-                style={styles.deleteButton}
-                labelStyle={styles.deleteButtonText}
+                style={styles.logoutButton}
+                labelStyle={styles.logoutButtonText}
               >
-                Eliminar
+                Cerrar sesión
               </Button>
             </View>
           </View>
@@ -58,7 +61,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 16,
     margin: 20,
-    maxWidth: 400,
+    maxWidth: '90%',
     width: '100%',
   },
   body: {
@@ -68,28 +71,41 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Geist',
-    fontWeight: '600',
-    fontSize: 16,
+    fontWeight: '700',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#374151',
     textAlign: 'center',
   },
   buttonContainer: {
     width: '100%',
-    gap: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
   },
   cancelButton: {
+    flex: 1,
+    marginRight: 8,
     borderRadius: 8,
   },
   cancelButtonText: {
     fontFamily: 'Geist',
     fontWeight: '500',
-    color: '#4f46e5',
+    color: '#3b82f6',
   },
-  deleteButton: {
+  logoutButton: {
+    flex: 1,
+    marginLeft: 8,
     borderRadius: 8,
-    backgroundColor: '#d20f39',
+    backgroundColor: '#ef4444',
   },
-  deleteButtonText: {
+  logoutButtonText: {
     fontFamily: 'Geist',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 }); 

@@ -1,12 +1,21 @@
 import { NavigationContainer } from '@react-navigation/native';
-import { NativeBaseProvider } from 'native-base';
-import { theme } from './theme/catppuccinLatte';
+import { PaperProvider } from 'react-native-paper';
 import { RootNavigator } from 'src/navigation/RootNavigator';
 import * as Font from 'expo-font';
 import { useEffect, useState } from 'react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+  };
 
   useEffect(() => {
     (async () => {
@@ -25,10 +34,16 @@ export default function App() {
   }
 
   return (
-    <NativeBaseProvider theme={theme}>
-      <NavigationContainer>
-        <RootNavigator />
-      </NavigationContainer>
-    </NativeBaseProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <PaperProvider>
+        <NavigationContainer>
+          <RootNavigator
+            isAuthenticated={isAuthenticated}
+            onLogin={handleLogin}
+            onLogout={handleLogout} 
+          />
+        </NavigationContainer>
+      </PaperProvider>
+    </GestureHandlerRootView>
   );
-} 
+}

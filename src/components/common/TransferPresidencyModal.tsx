@@ -2,13 +2,14 @@ import React from 'react';
 import { Modal, View, StyleSheet } from 'react-native';
 import { Button, Text } from 'react-native-paper';
 
-interface ConfirmDeleteModalProps {
+interface TransferPresidencyModalProps {
   isOpen: boolean;
   onCancel: () => void;
   onConfirm: () => void;
+  userName: string;
 }
 
-export function ConfirmDeleteModal({ isOpen, onCancel, onConfirm }: ConfirmDeleteModalProps) {
+export function TransferPresidencyModal({ isOpen, onCancel, onConfirm, userName }: TransferPresidencyModalProps) {
   return (
     <Modal
       visible={isOpen}
@@ -20,7 +21,10 @@ export function ConfirmDeleteModal({ isOpen, onCancel, onConfirm }: ConfirmDelet
         <View style={styles.content}>
           <View style={styles.body}>
             <Text style={styles.title}>
-              ¿Estás seguro de eliminar este anuncio?
+              ¿Estás seguro de transferir tu presidencia?
+            </Text>
+            <Text style={styles.subtitle}>
+              Al confirmar, {userName} asumirá todas las funcionalidades de presidente y perderás los permisos asociados a este título.
             </Text>
             <View style={styles.buttonContainer}>
               <Button
@@ -34,10 +38,10 @@ export function ConfirmDeleteModal({ isOpen, onCancel, onConfirm }: ConfirmDelet
               <Button
                 mode="contained"
                 onPress={onConfirm}
-                style={styles.deleteButton}
-                labelStyle={styles.deleteButtonText}
+                style={styles.confirmButton}
+                labelStyle={styles.confirmButtonText}
               >
-                Eliminar
+                Confirmar
               </Button>
             </View>
           </View>
@@ -58,7 +62,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 16,
     margin: 20,
-    maxWidth: 400,
+    maxWidth: '90%',
     width: '100%',
   },
   body: {
@@ -68,28 +72,41 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: 'Geist',
-    fontWeight: '600',
-    fontSize: 16,
+    fontWeight: '700',
+    fontSize: 18,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#374151',
     textAlign: 'center',
   },
   buttonContainer: {
     width: '100%',
-    gap: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
   },
   cancelButton: {
+    flex: 1,
+    marginRight: 8,
     borderRadius: 8,
   },
   cancelButtonText: {
     fontFamily: 'Geist',
     fontWeight: '500',
-    color: '#4f46e5',
+    color: '#3b82f6',
   },
-  deleteButton: {
+  confirmButton: {
+    flex: 1,
+    marginLeft: 8,
     borderRadius: 8,
-    backgroundColor: '#d20f39',
+    backgroundColor: '#ef4444',
   },
-  deleteButtonText: {
+  confirmButtonText: {
     fontFamily: 'Geist',
-    fontWeight: '500',
+    fontWeight: '600',
   },
 }); 

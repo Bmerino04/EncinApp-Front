@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Text, Image, VStack, HStack, Icon, Pressable } from 'native-base';
+import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from 'react-native-paper';
 import { MaterialIcons } from '@expo/vector-icons';
 
 export interface Announcement {
@@ -19,53 +20,129 @@ interface AnnouncementCardProps {
 
 export function AnnouncementCard({ announcement, onPress }: AnnouncementCardProps) {
   const CardContent = (
-    <VStack space={2}>
-      <Text fontFamily="Geist" fontWeight="700" fontSize="md" mb={1}>
+    <View style={styles.cardContent}>
+      <Text style={styles.title}>
         {announcement.titulo}
       </Text>
-      <Image
-        source={{ uri: announcement.imagenUrl }}
-        alt={announcement.titulo}
-        borderRadius={16}
-        w="100%"
-        h={180}
-        resizeMode="cover"
-        mb={2}
-      />
-      <HStack alignItems="center" space={1} mb={1}>
-        <Icon as={MaterialIcons} name="location-on" size={4} color="muted.500" />
-        <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700">
+
+      <Text style={styles.body}>
+        {announcement.cuerpo}
+      </Text>
+
+      {announcement.imagenUrl !== '' && (
+        <Image
+          source={{ uri: announcement.imagenUrl }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      )}
+
+      <View style={styles.locationContainer}>
+        <MaterialIcons name="location-on" size={16} color="#6b7280" />
+        <Text style={styles.locationText}>
           {announcement.direccionAnuncio}
         </Text>
-      </HStack>
-      <HStack alignItems="center" space={1}>
-        <Icon as={MaterialIcons} name="event" size={4} color="muted.500" />
-        <Text fontFamily="Geist" fontWeight="400" fontSize="sm" color="muted.700">
+      </View>
+
+      <View style={styles.dateContainer}>
+        <MaterialIcons name="event" size={16} color="#6b7280" />
+        <Text style={styles.dateText}>
           {formatDateTime(announcement.fechaAsociada)}
         </Text>
-      </HStack>
-    </VStack>
+      </View>
+    </View>
   );
 
   if (onPress) {
     return (
-      <Pressable onPress={onPress} borderRadius={20} mb={4} mx={1}>
-        <Box bg="white" borderRadius={20} shadow={2} p={3}>
+      <TouchableOpacity onPress={onPress} style={styles.touchableContainer}>
+        <View style={styles.card}>
           {CardContent}
-        </Box>
-      </Pressable>
+        </View>
+      </TouchableOpacity>
     );
   }
 
   return (
-    <Box bg="white" borderRadius={20} shadow={2} p={3} mb={4} mx={1}>
+    <View style={styles.card}>
       {CardContent}
-    </Box>
+    </View>
   );
 }
 
+// Formatea fecha y hora desde `fecha_relacionada`
 function formatDateTime(dateString: string) {
-  // Example: 2025-05-10T14:00:00
   const date = new Date(dateString);
-  return `${date.toLocaleDateString()} - ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} hrs`;
-} 
+  const options: Intl.DateTimeFormatOptions = {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  };
+
+  return date.toLocaleDateString('es-CL', options).replace(',', ' -') + ' hrs';
+}
+
+const styles = StyleSheet.create({
+  touchableContainer: {
+    borderRadius: 20,
+    marginBottom: 16,
+    marginHorizontal: 4,
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
+    padding: 12,
+  },
+  cardContent: {
+    gap: 8,
+  },
+  title: {
+    fontFamily: 'Geist',
+    fontWeight: '700',
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  body: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#374151',
+  },
+  image: {
+    borderRadius: 16,
+    width: '100%',
+    height: 180,
+    marginBottom: 8,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 4,
+  },
+  locationText: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#374151',
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  dateText: {
+    fontFamily: 'Geist',
+    fontWeight: '400',
+    fontSize: 14,
+    color: '#374151',
+  },
+}); 
